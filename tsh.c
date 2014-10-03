@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <string.h>
+#include <stdio.h>
 
 /************Private include**********************************************/
 #include "tsh.h"
@@ -69,11 +70,12 @@ int main (int argc, char *argv[])
   if (signal(SIGINT, sig) == SIG_ERR) PrintPError("SIGINT");
   if (signal(SIGTSTP, sig) == SIG_ERR) PrintPError("SIGTSTP");
 
+  printf("%s", "tsh> ");
+
   while (!forceExit) /* repeat forever */
   {
     /* read command line */
     getCommandLine(&cmdLine, BUFSIZE);
-
     if(strcmp(cmdLine, "exit") == 0)
     {
       forceExit=TRUE;

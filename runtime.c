@@ -100,6 +100,8 @@ void RunCmd(commandT** cmd, int n)
     for(i = 0; i < n; i++)
       ReleaseCmdT(&cmd[i]);
   }
+  
+  printf("%s", "tsh> ");
 }
 
 void RunCmdFork(commandT* cmd, bool fork)
