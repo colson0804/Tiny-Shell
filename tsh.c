@@ -70,11 +70,12 @@ int main (int argc, char *argv[])
   if (signal(SIGINT, sig) == SIG_ERR) PrintPError("SIGINT");
   if (signal(SIGTSTP, sig) == SIG_ERR) PrintPError("SIGTSTP");
 
-  printf("%s", "tsh> ");
+  //printf("%s", "tsh> ");
 
   while (!forceExit) /* repeat forever */
   {
     /* read command line */
+    printf("%s", "tsh> ");
     getCommandLine(&cmdLine, BUFSIZE);
     if(strcmp(cmdLine, "exit") == 0)
     {

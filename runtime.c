@@ -100,8 +100,6 @@ void RunCmd(commandT** cmd, int n)
     for(i = 0; i < n; i++)
       ReleaseCmdT(&cmd[i]);
   }
-  
-  printf("%s", "tsh> ");
 }
 
 void RunCmdFork(commandT* cmd, bool fork)
@@ -187,20 +185,45 @@ static bool ResolveExternalCmd(commandT* cmd)
     if(stat(buf, &fs) >= 0){
       if(S_ISDIR(fs.st_mode) == 0)
         if(access(buf,X_OK) == 0){/*Whether it's an executable or the user has required permisson to run it*/
-          cmd->name = strdup(buf); 
+          cmd->name = strdup(buf);
           return TRUE;
         }
     }
   }
-  return FALSE; /*The command is not found or the user don't have enough priority to run.*/
+  return FALSE; /*The command is not found or the user doesn't have enough priority to run.*/
 }
 
 static void Exec(commandT* cmd, bool forceFork)
 {
+  int pid;
+  int ppid = getpid();
+  if ((pid = fork()) < 0) {
+    perror("fork failed");
+  } else { 
+    if (pid == 0){ /* Return 0 to the child */
+      // Need to pass path name and arguments to execvp
+      execv(cmd->name, cmd->argv);
+      printf("I am %d the child of %d\n", getpid(), ppid);
+    } else { /* And the child PID to the parent */
+      wait(NULL);
+      printf("Child process completed\n");
+    }
+ } 
+
 }
 
 static bool IsBuiltIn(char* cmd)
 {
+  // Need to search for cmd[0] in file path
+  if(strcmp(cmd, "cd") == 0) {
+    return TRUE;
+  } else if (strcmp(cmd, "bg") == 0) {
+    return TRUE;
+  } else if (strcmp(cmd, "fg") == 0) {
+    return TRUE;
+  } else if (strcmp(cmd, "jobs") == 0) {
+    return TRUE;
+  }
   return FALSE;     
 }
 
