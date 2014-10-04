@@ -205,16 +205,13 @@ static void Exec(commandT* cmd, bool forceFork)
 
       if (cmd->bg){
         setpgid(getpid(), getpgid(ppid)+1);
-        printf("BG PID: %d\n", getpgrp());
       }
 
       execv(cmd->name, cmd->argv);
-      printf("I am %d the child of %d\n", getpid(), ppid);
      
     } else { /* And the child PID to the parent */
       if (!(cmd->bg)){
         wait(NULL);
-        printf("Child process completed\n");
       }
     }
  } 

@@ -75,7 +75,6 @@ int main (int argc, char *argv[])
   while (!forceExit) /* repeat forever */
   {
     /* read command line */
-    printf("%s", "tsh> ");
     getCommandLine(&cmdLine, BUFSIZE);
     if(strcmp(cmdLine, "exit") == 0)
     {
