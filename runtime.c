@@ -202,11 +202,20 @@ static void Exec(commandT* cmd, bool forceFork)
   } else { 
     if (pid == 0){ /* Return 0 to the child */
       // Need to pass path name and arguments to execvp
+
+      if (cmd->bg){
+        setpgid(getpid(), getpgid(ppid)+1);
+        printf("BG PID: %d\n", getpgrp());
+      }
+
       execv(cmd->name, cmd->argv);
       printf("I am %d the child of %d\n", getpid(), ppid);
+     
     } else { /* And the child PID to the parent */
-      wait(NULL);
-      printf("Child process completed\n");
+      if (!(cmd->bg)){
+        wait(NULL);
+        printf("Child process completed\n");
+      }
     }
  } 
 
