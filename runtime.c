@@ -118,7 +118,8 @@ void RunCmdFork(commandT* cmd, bool fork)
 
 void RunCmdBg(commandT* cmd)
 {
-  // TODO
+  /*char* bgCmd = cmd->argv[1];
+  int pid = getpid();*/
 }
 
 void RunCmdPipe(commandT* cmd1, commandT* cmd2)
@@ -133,6 +134,10 @@ void RunCmdRedirIn(commandT* cmd, char* file)
 {
 }
 
+void stopFGProcesses() {
+  
+  //kill(getpid(), SIGTSTP);
+}
 
 /*Try to run an external command*/
 static void RunExternalCmd(commandT* cmd, bool fork)
@@ -233,9 +238,26 @@ static bool IsBuiltIn(char* cmd)
   return FALSE;     
 }
 
+static void cd(commandT* cmd) {
+  char* pathName = getenv("PATH");
+  char* newDir = cmd->argv[1];
+  printf("%s\n", pathName);
+}
 
 static void RunBuiltInCmd(commandT* cmd)
 {
+  // Need to search for cmd[0] in file path
+  if(strcmp(cmd->argv[0], "cd") == 0) {
+    printf("cd was called\n");
+    cd(cmd);
+  } else if (strcmp(cmd->argv[0], "bg") == 0) {
+    printf("bg was called\n");
+    RunCmdBg(cmd);
+  } else if (strcmp(cmd->argv[0], "fg") == 0) {
+    printf("fg was called\n");
+  } else if (strcmp(cmd->argv[0], "jobs") == 0) {
+    printf("jobs was called\n");
+  }
 }
 
 void CheckJobs()
