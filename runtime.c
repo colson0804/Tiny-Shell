@@ -89,11 +89,15 @@ static bool IsBuiltIn(char*);
 
 /**************Implementation***********************************************/
 int total_task;
+int jobCounter= 1;
+
 void RunCmd(commandT** cmd, int n)
 {
   int i;
   total_task = n;
-  if(n == 1)
+  if (cmd->bg)
+    RunCmdBg(cmd);
+  else if(n == 1)
     RunCmdFork(cmd[0], TRUE);
   else{
     RunCmdPipe(cmd[0], cmd[1]);
@@ -118,7 +122,8 @@ void RunCmdFork(commandT* cmd, bool fork)
 
 void RunCmdBg(commandT* cmd)
 {
-  // TODO
+  int ppid = getpid();
+  setpgid(getpid(), getpgid(ppid)+1); 
 }
 
 void RunCmdPipe(commandT* cmd1, commandT* cmd2)
@@ -137,8 +142,15 @@ void RunCmdRedirIn(commandT* cmd, char* file)
 /*Try to run an external command*/
 static void RunExternalCmd(commandT* cmd, bool fork)
 {
+  chdir(strcat(getCurrentWorkingDir(), "/testsuite"));
+
   if (ResolveExternalCmd(cmd)){
     Exec(cmd, fork);
+    if(strstr(cmd->cmdline, "./") != NULL){
+      cmd->jobNumber = jobCounter;
+      jobCounter++;
+      printf("[%d]  Done               %s\n", cmd->jobNumber, cmd->cmdline); 
+    }
   }
   else {
     printf("%s: command not found\n", cmd->argv[0]);
@@ -165,6 +177,7 @@ static bool ResolveExternalCmd(commandT* cmd)
     }
     return FALSE;
   }
+
   pathlist = getenv("PATH");
   if(pathlist == NULL) return FALSE;
   i = 0;
@@ -196,19 +209,13 @@ static bool ResolveExternalCmd(commandT* cmd)
 static void Exec(commandT* cmd, bool forceFork)
 {
   int pid;
-  int ppid = getpid();
   if ((pid = fork()) < 0) {
     perror("fork failed");
   } else { 
     if (pid == 0){ /* Return 0 to the child */
       // Need to pass path name and arguments to execvp
 
-      if (cmd->bg){
-        setpgid(getpid(), getpgid(ppid)+1);
-      }
-
       execv(cmd->name, cmd->argv);
-     
     } else { /* And the child PID to the parent */
       if (!(cmd->bg)){
         wait(NULL);
@@ -235,11 +242,35 @@ static bool IsBuiltIn(char* cmd)
 
 
 static void RunBuiltInCmd(commandT* cmd)
-{
+{  
+  if(strcmp(cmd->argv[0], "cd") == 0) {
+    char* cwd = getCurrentWorkingDir();
+    char* input = cmd->argv[1];
+    if (input == NULL){
+       chdir("/home/aqualab");
+       return;
+    }
+    char* newCwd = strcat(cwd, "/");
+    newCwd = strcat(newCwd, input);
+    
+    struct stat s;
+    if(stat(input, &s) == 0){
+      chdir(newCwd);
+    }
+  }
+  if(strcmp(cmd->argv[0], "jobs") == 0) {
+    CheckJobs();
+  }
 }
 
 void CheckJobs()
 {
+   //printf("[%d]  Running               %s  &\n", cmd->jobNumber, cmd->cmdline); 
+}
+
+char* getCurrentWorkingDir(){
+  char buff[1024];
+  return getcwd(buff, 1024);
 }
 
 

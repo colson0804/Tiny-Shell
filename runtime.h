@@ -59,6 +59,7 @@ typedef struct command_t
   char *cmdline;
   char *redirect_in, *redirect_out;
   int is_redirect_in, is_redirect_out;
+  int jobNumber;
   int bg;
   int argc;
   char* argv[];
