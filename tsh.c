@@ -74,8 +74,10 @@ int main (int argc, char *argv[])
 
   while (!forceExit) /* repeat forever */
   {
+    printf("tsh> ");
     /* read command line */
     getCommandLine(&cmdLine, BUFSIZE);
+
     if(strcmp(cmdLine, "exit") == 0)
     {
       forceExit=TRUE;
@@ -98,5 +100,11 @@ int main (int argc, char *argv[])
 
 static void sig(int signo)
 {
+  if (signo == 18) {  // Ctrl+Z
+    printf("%d\n", signo);
+    stopFGProcesses();
+  } else if (signo == 2) {  // Ctrl+C
+    
+  }
 }
 

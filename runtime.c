@@ -124,6 +124,8 @@ void RunCmdBg(commandT* cmd)
 {
   int ppid = getpid();
   setpgid(getpid(), getpgid(ppid)+1); 
+  /*char* bgCmd = cmd->argv[1];
+  int pid = getpid();*/
 }
 
 void RunCmdPipe(commandT* cmd1, commandT* cmd2)
@@ -138,6 +140,10 @@ void RunCmdRedirIn(commandT* cmd, char* file)
 {
 }
 
+void stopFGProcesses() {
+  
+  //kill(getpid(), SIGTSTP);
+}
 
 /*Try to run an external command*/
 static void RunExternalCmd(commandT* cmd, bool fork)
@@ -240,6 +246,11 @@ static bool IsBuiltIn(char* cmd)
   return FALSE;     
 }
 
+static void cd(commandT* cmd) {
+  char* pathName = getenv("PATH");
+  char* newDir = cmd->argv[1];
+  printf("%s\n", pathName);
+}
 
 static void RunBuiltInCmd(commandT* cmd)
 {  
