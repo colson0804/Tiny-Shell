@@ -63,7 +63,10 @@
 /************Global Variables*********************************************/
 
 
-#define NBUILTINCOMMANDS (sizeof BuiltInCommands / sizeof(char*))
+#define NBUILTINCOMMANDS (sizeof BuiltInCommands / sizeof(char*));
+#define RUNNING = 1;
+#define DONE = 2;
+#define STOPPED = 3;
 
 typedef struct job_l {
   pid_t pid;
@@ -77,6 +80,8 @@ typedef struct job_l {
 /* the pids of the background processes */
 jobL *jobs = NULL;
 int jobCounter = 1;
+
+
 /************Function Prototypes******************************************/
 /* run command */
 static void RunCmdFork(commandT*, bool);

@@ -53,8 +53,6 @@
 #define VAREXTERN(x, y) extern x;
 #endif
 
-int RUNNING = 1, DONE = 2, STOPPED = 3;
-
 typedef struct command_t
 {
   char* name;

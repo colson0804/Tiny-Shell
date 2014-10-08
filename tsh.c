@@ -69,6 +69,7 @@ int main (int argc, char *argv[])
   /* shell initialization */
   if (signal(SIGINT, sig) == SIG_ERR) PrintPError("SIGINT");
   if (signal(SIGTSTP, sig) == SIG_ERR) PrintPError("SIGTSTP");
+  if (signal(SIGCHLD, sig) == SIG_ERR) PrintPError("SIGCHLD");
 
   //printf("%s", "tsh> ");
 
@@ -76,7 +77,7 @@ int main (int argc, char *argv[])
   {
     /* read command line */
     getCommandLine(&cmdLine, BUFSIZE);
-    
+
     if(strcmp(cmdLine, "exit") == 0)
     {
       forceExit=TRUE;
@@ -99,5 +100,14 @@ int main (int argc, char *argv[])
 
 static void sig(int signo)
 {
+  if (signo == SIGTSTP){
+    printf("YOU PRESSED CTRL+Z\n");
+  }
+  else if (signo == SIGINT){
+    printf("YOU PRESSED CTRL+C\n");
+  }  
+  else if (signo == SIGCHLD){
+    printf("Child process finished\n");
+  }
 }
 
