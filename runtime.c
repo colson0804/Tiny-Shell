@@ -64,9 +64,9 @@
 
 
 #define NBUILTINCOMMANDS (sizeof BuiltInCommands / sizeof(char*));
-#define RUNNING = 1;
-#define DONE = 2;
-#define STOPPED = 3;
+#define RUNNING 1;
+#define DONE 2;
+#define STOPPED 3;
 
 typedef struct job_l {
   pid_t pid;
@@ -143,6 +143,19 @@ void RunCmdRedirOut(commandT* cmd, char* file)
 
 void RunCmdRedirIn(commandT* cmd, char* file)
 {
+}
+
+void StopFgProc() {
+  jobL* current = jobs;
+  printf("First job: %d\n", current->pid);
+  while (current != NULL) {
+    if (!current->isBG) {
+      printf("The foreground job is %d\n", current->pid);
+      current->status = STOPPED;
+      kill(-current->pid, SIGTSTP);
+    }
+    current = current->next;
+  }
 }
 
 
@@ -263,6 +276,7 @@ static void Exec(commandT* cmd, bool forceFork)
         sigprocmask(SIG_UNBLOCK, &sigmask, NULL);
       }
       else{
+        jobL *newJob = addtolist(pid, cmd);
         wait(NULL);
         sigprocmask(SIG_UNBLOCK, &sigmask, NULL);        
       }

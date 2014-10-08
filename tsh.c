@@ -101,6 +101,7 @@ int main (int argc, char *argv[])
 static void sig(int signo)
 {
   if (signo == SIGTSTP){
+    StopFgProc();
     printf("YOU PRESSED CTRL+Z\n");
   }
   else if (signo == SIGINT){
