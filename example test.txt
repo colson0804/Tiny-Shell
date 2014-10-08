@@ -3,92 +3,10 @@ test33: PASS
 test34: PASS
 test01: PASS
 test02: PASS
-test03: FAILED
-Input:
-bash -c "sleep 2; echo hello2;" &
-echo hello
-bash -c "sleep 1; echo hello3;" &
-echo hello4
-sleep 3
-exit
--- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
-hello                                                                           hello
-hello4                                                                          hello4
-hello3                                                                          hello3
-hello2                                                                        <
-------------------------------------------------------------------------------------------------------------------------------------------------------------
-test04: FAILED
-Input:
-bash -c "sleep 3; echo hello1;" &
-bash -c "sleep 6; echo hello2;" &
-jobs
-sleep 1
-jobs
-sleep 4
-jobs
-sleep 2
-exit
--- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
-[1]   Running                 bash -c "sleep 3; echo hello1;" &               | [1]   Running                bash -c "sleep 3; echo hello1;" &
-[2]   Running                 bash -c "sleep 6; echo hello2;" &               | [2]   Running                bash -c "sleep 6; echo hello2;" &
-[1]   Running                 bash -c "sleep 3; echo hello1;" &               | [1]   Running                bash -c "sleep 3; echo hello1;" &
-[2]   Running                 bash -c "sleep 6; echo hello2;" &               | [2]   Running                bash -c "sleep 6; echo hello2;" &
-hello1                                                                          hello1
-[1]   Done                    bash -c "sleep 3; echo hello1;"                 | [1]   Done                   bash -c "sleep 3; echo hello1;"
-[2]   Running                 bash -c "sleep 6; echo hello2;" &               | [2]   Running                bash -c "sleep 6; echo hello2;" &
-hello2                                                                        <
-------------------------------------------------------------------------------------------------------------------------------------------------------------
-test05: FAILED
-Input:
-bash -c "sleep 2; echo hello2;" &
-echo hello
-sleep 3
-echo hello5
-bash -c "sleep 3; echo hello3;" &
-echo hello4
-bash -c "sleep 4; echo hello6;" &
-bash -c "sleep 2; echo hello7;" &
-sleep 5
-exit
--- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
-hello                                                                           hello
-hello2                                                                          hello2
-[1]   Done                    bash -c "sleep 2; echo hello2;"                 | [1]   Done                   bash -c "sleep 2; echo hello2;"
-hello5                                                                          hello5
-hello4                                                                          hello4
-hello7                                                                        <
-hello3                                                                        <
-hello6                                                                        <
-------------------------------------------------------------------------------------------------------------------------------------------------------------
-test06: FAILED
-Input:
-bash -c "sleep 2; echo hello1;" &
-bash -c "sleep 4; echo hello2;" &
-jobs
-sleep 3
-jobs
-sleep 2
-jobs
-bash -c "sleep 4; echo hello3;" &
-jobs
-sleep 5
-jobs
-exit
--- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
-[1]   Running                 bash -c "sleep 2; echo hello1;" &               | [1]   Running                bash -c "sleep 2; echo hello1;" &
-[2]   Running                 bash -c "sleep 4; echo hello2;" &               | [2]   Running                bash -c "sleep 4; echo hello2;" &
-hello1                                                                          hello1
-[1]   Done                    bash -c "sleep 2; echo hello1;"                 | [1]   Done                   bash -c "sleep 2; echo hello1;"
-[2]   Running                 bash -c "sleep 4; echo hello2;" &               | [2]   Running                bash -c "sleep 4; echo hello2;" &
-                                                                              > [2]   Running                bash -c "sleep 4; echo hello2;" &
-                                                                              > [2]   Running                bash -c "sleep 4; echo hello2;" &
-                                                                              > [3]   Running                bash -c "sleep 4; echo hello3;" &
-hello2                                                                          hello2
-[2]   Done                    bash -c "sleep 4; echo hello2;"                 | [2]   Done                   bash -c "sleep 4; echo hello2;"
-[1]   Running                 bash -c "sleep 4; echo hello3;" &               | [3]   Running                bash -c "sleep 4; echo hello3;" &
-hello3                                                                        <
-[1]   Done                    bash -c "sleep 4; echo hello3;"                 <
-------------------------------------------------------------------------------------------------------------------------------------------------------------
+test03: PASS
+test04: PASS
+test05: PASS
+test06: PASS
 test07: FAILED
 Input:
 bash -c "sleep 2; echo hello1;" &
@@ -104,13 +22,14 @@ exit
 -- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
 [1]   Running                 bash -c "sleep 2; echo hello1;" &               | [1]   Running                bash -c "sleep 2; echo hello1;" &
 [2]   Running                 bash -c "sleep 5; echo hello2;" &               | [2]   Running                bash -c "sleep 5; echo hello2;" &
-hello1                                                                        <
-hello2                                                                        <
-[1]   Done                    bash -c "sleep 2; echo hello1;"                 <
+hello1                                                                          hello1
+hello2                                                                          hello2
+[1]   Done                    bash -c "sleep 2; echo hello1;"                 | [1]   Done                   bash -c "sleep 2; echo hello1;"
+                                                                              > [2]   Done                   bash -c "sleep 5; echo hello2;"
 hello3                                                                          hello3
-[1]   Running                 bash -c "sleep 3; echo hello4;" &               | [1]   Running                bash -c "sleep 2; echo hello1;" &
-hello4                                                                        | [2]   Running                bash -c "sleep 5; echo hello2;" &
-                                                                              > [2]   Running                bash -c "sleep 3; echo hello4;" &
+[1]   Running                 bash -c "sleep 3; echo hello4;" &               | [1]   Running                bash -c "sleep 3; echo hello4;" &
+hello4                                                                          hello4
+                                                                              > [1]   Done                   bash -c "sleep 3; echo hello4;"
 hello5                                                                          hello5
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 test08: FAILED
@@ -125,11 +44,11 @@ exit
 -- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
 [1]   Running                 bash -c "sleep 1; echo hello1;" &               | [1]   Running                bash -c "sleep 1; echo hello1;" &
 [2]   Running                 bash -c "sleep 3; echo hello2;" &               | [2]   Running                bash -c "sleep 3; echo hello2;" &
-hello1                                                                        <
-hello2                                                                        <
-[1]   Done                    bash -c "sleep 1; echo hello1;"                 <
+hello1                                                                          hello1
+hello2                                                                          hello2
+[1]   Done                    bash -c "sleep 1; echo hello1;"                 | [1]   Done                   bash -c "sleep 1; echo hello1;"
+                                                                              > [2]   Done                   bash -c "sleep 3; echo hello2;"
 hello3                                                                          hello3
-                                                                              > hello1
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 test09: PASS
 test10: FAILED
@@ -193,8 +112,8 @@ fg 1
 jobs
 exit
 -- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
-                                                                              | [1]   Running                ./myspin 5 &
-[1]   Stopped                 ./myspin 5                                      | [1]   Running                ./myspin 5 &
+                                                                              | [1]   Done                   ./myspin 5
+[1]   Stopped                 ./myspin 5                                      <
 [1]   Stopped                 ./myspin 5                                      <
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 test14: FAILED
@@ -245,11 +164,11 @@ exit
 hello1                                                                          hello1
 hello2                                                                          hello2
 [1]   Running                 bash -c "sleep 3; echo hello3;" &               | [1]   Running                bash -c "sleep 3; echo hello3;" &
-hello3                                                                        <
+hello3                                                                          hello3
+                                                                              > [1]   Done                   bash -c "sleep 3; echo hello3;"
 hello4                                                                          hello4
-                                                                              > hello3
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 test18: PASS
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-8 basic test cases passed
+12 basic test cases passed

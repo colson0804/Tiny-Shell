@@ -64,9 +64,9 @@
 
 
 #define NBUILTINCOMMANDS (sizeof BuiltInCommands / sizeof(char*));
-#define RUNNING 1;
-#define DONE 2;
-#define STOPPED 3;
+#define RUNNING 1
+#define DONE 2
+#define STOPPED 3
 
 typedef struct job_l {
   pid_t pid;
@@ -289,6 +289,7 @@ static void Exec(commandT* cmd, bool forceFork)
     if (pid == 0){ /* Return 0 to the child */
       // Need to pass path name and arguments to execvp
       setpgid(0,0);
+      sigprocmask(SIG_UNBLOCK, &sigmask, NULL);
       execv(cmd->name, cmd->argv);
       
     } else { /* And the child PID to the parent */
@@ -297,10 +298,13 @@ static void Exec(commandT* cmd, bool forceFork)
         sigprocmask(SIG_UNBLOCK, &sigmask, NULL);
       }
       else{
+        int statusCode;
         addtolist(pid, cmd);
-        wait(NULL);
+        while(waitpid(pid, &statusCode, WUNTRACED|WNOHANG) == 0){
+          sleep(1);
+        }
         removeFromList(pid);
-        sigprocmask(SIG_UNBLOCK, &sigmask, NULL);        
+        sigprocmask(SIG_UNBLOCK, &sigmask, NULL);  
       }
     }
  } 
@@ -321,6 +325,22 @@ static bool IsBuiltIn(char* cmd)
   return FALSE;     
 }
 
+void runInFg(int job){
+  jobL *jobNode = jobs;
+  int status;
+  pid_t result;
+  while(jobNode != NULL){
+    result = waitpid(jobNode->pid, &status, WUNTRACED);
+    if((result) && (jobNode->pid == job)) {
+      while(waitpid(jobNode->pid, &status, WUNTRACED|WNOHANG) == 0){
+          sleep(1);
+      }
+      removeFromList(jobNode->pid);
+      return;
+    }
+    jobNode = jobNode -> next;
+  }
+}
 
 void runbgJob(int job){
   jobL *jobNode = jobs;
@@ -334,6 +354,7 @@ void runbgJob(int job){
     jobNode = jobNode -> next;
   }
 }
+
 
 static void RunBuiltInCmd(commandT* cmd)
 {
@@ -355,6 +376,10 @@ static void RunBuiltInCmd(commandT* cmd)
 
   if(strcmp(cmd->argv[0], "bg") == 0) {
     runbgJob(atoi(cmd->argv[1]));
+  }
+
+  if(strcmp(cmd->argv[0], "fg") == 0) {
+    runInFg(atoi(cmd->argv[1]));
   }
 
   if(strcmp(cmd->argv[0], "jobs") == 0) {

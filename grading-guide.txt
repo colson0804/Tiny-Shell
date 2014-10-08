@@ -43,16 +43,15 @@ to evaluate and grade your project.  All test cases end with the
 18) ctrl-c handled by the shell
 19) single set of pipes
 20) single set of pipes
+
+For extra credit (total 20 points):
+
+There are 4 extra credit test cases, worth 5 points each.
 21) single set of pipes
 22) multiple pipes
 23) multiple pipes
 24) redirection
 25) redirection, < and > on the same command line
-
-For extra credit (total 20 points):
-
-There are 4 extra credit test cases, worth 5 points each.
-
 26) set alias
 27) set alias, unset alias
 28) list aliases
