@@ -85,7 +85,7 @@ int main (int argc, char *argv[])
     }
 
     /* checks the status of background jobs */
-    CheckJobs();
+    CheckJobs(0);
 
     /* interpret command and line
      * includes executing of commands */
@@ -100,15 +100,15 @@ int main (int argc, char *argv[])
 
 static void sig(int signo)
 {
-  if (signo == SIGTSTP){
-    StopFgProc();
-    printf("YOU PRESSED CTRL+Z\n");
-  }
-  else if (signo == SIGINT){
-    printf("YOU PRESSED CTRL+C\n");
-  }  
-  else if (signo == SIGCHLD){
-    printf("Child process finished\n");
-  }
+  // if (signo == SIGTSTP){
+  //   StopFgProc();
+  //   printf("YOU PRESSED CTRL+Z\n");
+  // }
+  // else if (signo == SIGINT){
+  //   printf("YOU PRESSED CTRL+C\n");
+  // }  
+  // else if (signo == SIGCHLD){
+  //   printf("Child process finished\n");
+  // }
 }
 
