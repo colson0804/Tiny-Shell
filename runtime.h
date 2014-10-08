@@ -53,14 +53,16 @@
 #define VAREXTERN(x, y) extern x;
 #endif
 
+typedef enum { RUNNING, DONE, FG, FGDONE, STOPPED } state_t;
+
 typedef struct command_t
 {
   char* name;
   char *cmdline;
   char *redirect_in, *redirect_out;
   int is_redirect_in, is_redirect_out;
+  int bg; 
   int jobNumber;
-  int bg;
   int argc;
   char* argv[];
 } commandT;

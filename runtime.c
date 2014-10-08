@@ -64,14 +64,18 @@
 
 #define NBUILTINCOMMANDS (sizeof BuiltInCommands / sizeof(char*))
 
-typedef struct bgjob_l {
+typedef struct job_l {
   pid_t pid;
-  struct bgjob_l* next;
-} bgjobL;
+  state_t state;
+  int id;
+  int isBG;
+  char *cmdline;
+  struct job_l* next;
+} jobL;
 
 /* the pids of the background processes */
-bgjobL *bgjobs = NULL;
-
+jobL *jobs = NULL;
+int jobCounter;
 /************Function Prototypes******************************************/
 /* run command */
 static void RunCmdFork(commandT*, bool);
@@ -89,15 +93,12 @@ static bool IsBuiltIn(char*);
 
 /**************Implementation***********************************************/
 int total_task;
-int jobCounter= 1;
-
 void RunCmd(commandT** cmd, int n)
 {
   int i;
   total_task = n;
-  if (cmd->bg)
-    RunCmdBg(cmd);
-  else if(n == 1)
+
+  if(n == 1)
     RunCmdFork(cmd[0], TRUE);
   else{
     RunCmdPipe(cmd[0], cmd[1]);
@@ -110,6 +111,7 @@ void RunCmdFork(commandT* cmd, bool fork)
 {
   if (cmd->argc<=0)
     return;
+
   if (IsBuiltIn(cmd->argv[0]))
   {
     RunBuiltInCmd(cmd);
@@ -122,10 +124,7 @@ void RunCmdFork(commandT* cmd, bool fork)
 
 void RunCmdBg(commandT* cmd)
 {
-  int ppid = getpid();
-  setpgid(getpid(), getpgid(ppid)+1); 
-  /*char* bgCmd = cmd->argv[1];
-  int pid = getpid();*/
+  //todo
 }
 
 void RunCmdPipe(commandT* cmd1, commandT* cmd2)
@@ -140,27 +139,20 @@ void RunCmdRedirIn(commandT* cmd, char* file)
 {
 }
 
-void stopFGProcesses() {
-  
-  //kill(getpid(), SIGTSTP);
-}
 
 /*Try to run an external command*/
 static void RunExternalCmd(commandT* cmd, bool fork)
 {
-  chdir(strcat(getCurrentWorkingDir(), "/testsuite"));
-
   if (ResolveExternalCmd(cmd)){
     Exec(cmd, fork);
-    if(strstr(cmd->cmdline, "./") != NULL){
-      cmd->jobNumber = jobCounter;
-      jobCounter++;
-      printf("[%d]  Done               %s\n", cmd->jobNumber, cmd->cmdline); 
-    }
+    // if((strstr(cmd->cmdline, "./") != NULL) && (cmd->bg != 1)) {
+    //   cmd->jobNumber = jobCounter;
+    //   jobCounter++;
+    //   printf("[%d]  Done               %s\n", cmd->jobNumber, cmd->cmdline); 
+    // }
   }
   else {
     printf("%s: command not found\n", cmd->argv[0]);
-    fflush(stdout);
     ReleaseCmdT(&cmd);
   }
 }
@@ -183,7 +175,6 @@ static bool ResolveExternalCmd(commandT* cmd)
     }
     return FALSE;
   }
-
   pathlist = getenv("PATH");
   if(pathlist == NULL) return FALSE;
   i = 0;
@@ -212,23 +203,60 @@ static bool ResolveExternalCmd(commandT* cmd)
   return FALSE; /*The command is not found or the user doesn't have enough priority to run.*/
 }
 
+void addtobglist(pid_t pid, commandT* cmd){
+  // jobL *jobList = jobs;
+  // jobL *newJobNode = (jobL *)malloc(sizeof(jobL));
+
+  // newJobNode->next = NULL;
+  // int newid = 0;
+
+  // if (jobList == NULL){
+  //   newJobNode->id = 1;
+  //   jobs = newJobNode;
+  // }
+  // else{
+  //   newid = jobList->id;
+  //   while(jobList->next !=NULL){
+  //     if(newid < jobList->id)
+  //       newid = jobList->id;
+  //     jobList = jobList->next;
+  //   }
+  //   jobList->next = newJobNode;
+  // }
+
+  // newJobNode->id = newid + 1;
+  // newJobNode->isBG = 1;
+  // newJobNode->pid = pid;
+  // newJobNode->cmdline = cmd->cmdline;
+  // newJobNode->state = RUNNING;
+}
+
 static void Exec(commandT* cmd, bool forceFork)
 {
   int pid;
+  sigset_t sigmask;
+
+  sigprocmask(SIG_BLOCK, &sigmask, NULL);
+
   if ((pid = fork()) < 0) {
     perror("fork failed");
   } else { 
     if (pid == 0){ /* Return 0 to the child */
       // Need to pass path name and arguments to execvp
+      setpgid(0,0);
 
       execv(cmd->name, cmd->argv);
     } else { /* And the child PID to the parent */
-      if (!(cmd->bg)){
-        wait(NULL);
+      if (cmd->bg){
+        addtobglist(pid, cmd);
+        sigprocmask(SIG_UNBLOCK, &sigmask, NULL);
+      }
+      else{
+        wait(NULL);  
+        sigprocmask(SIG_UNBLOCK, &sigmask, NULL);        
       }
     }
  } 
-
 }
 
 static bool IsBuiltIn(char* cmd)
@@ -246,42 +274,58 @@ static bool IsBuiltIn(char* cmd)
   return FALSE;     
 }
 
-static void cd(commandT* cmd) {
-  char* pathName = getenv("PATH");
-  char* newDir = cmd->argv[1];
-  printf("%s\n", pathName);
+
+void runbgJob(int job){
+  jobL *jobNode = jobs;
+  while(jobNode != NULL){
+    if(jobNode->state == STOPPED && jobNode->id == job){
+      kill(jobNode->pid, SIGCONT);
+      jobNode->state = RUNNING;
+    }
+    jobNode = jobNode -> next;
+  }
 }
 
 static void RunBuiltInCmd(commandT* cmd)
-{  
+{
   if(strcmp(cmd->argv[0], "cd") == 0) {
-    char* cwd = getCurrentWorkingDir();
     char* input = cmd->argv[1];
     if (input == NULL){
-       chdir("/home/aqualab");
+       chdir(getenv("HOME"));
        return;
     }
+    char* cwd = getCurrentWorkingDir();
     char* newCwd = strcat(cwd, "/");
-    newCwd = strcat(newCwd, input);
-    
+    newCwd = strcat(newCwd, input);    
     struct stat s;
     if(stat(input, &s) == 0){
       chdir(newCwd);
     }
   }
+
+
+  if(strcmp(cmd->argv[0], "bg") == 0) {
+    runbgJob(atoi(cmd->argv[1]));
+  }
+
   if(strcmp(cmd->argv[0], "jobs") == 0) {
     CheckJobs();
   }
+
+}
+
+char* getCurrentWorkingDir(){
+ char buff[1024];
+ return getcwd(buff, 1024);
 }
 
 void CheckJobs()
 {
-   //printf("[%d]  Running               %s  &\n", cmd->jobNumber, cmd->cmdline); 
-}
-
-char* getCurrentWorkingDir(){
-  char buff[1024];
-  return getcwd(buff, 1024);
+  // jobL *jobList = jobs;
+  // while(jobList != NULL){
+  //   printf("[%d]   Running                 %s", jobList->id, jobList->cmdline);
+  //   jobList = jobList->next;
+  // }
 }
 
 
