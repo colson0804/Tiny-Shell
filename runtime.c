@@ -79,7 +79,6 @@ typedef struct job_l {
 
 /* the pids of the background processes */
 jobL *jobs = NULL;
-int jobCounter = 1;
 
 
 /************Function Prototypes******************************************/
@@ -164,10 +163,6 @@ static void RunExternalCmd(commandT* cmd, bool fork)
 {
   if (ResolveExternalCmd(cmd)){
     Exec(cmd, fork);
-    if(cmd->bg != 1) {
-      cmd->jobNumber = jobCounter;
-      jobCounter++;
-    }
   }
   else {
     printf("%s: command not found\n", cmd->argv[0]);
@@ -221,6 +216,32 @@ static bool ResolveExternalCmd(commandT* cmd)
   return FALSE; /*The command is not found or the user doesn't have enough priority to run.*/
 }
 
+void removeFromList(pid_t pid){
+  fflush(stdout);
+
+  jobL *jobNode = jobs;
+  jobL *prev = NULL;
+  jobL *next = NULL;
+  while(jobNode != NULL){
+    next = jobNode->next;
+    if (jobNode->pid == pid){
+      fflush(stdout);
+      if (prev){
+        prev->next = next;
+      }
+      else{
+        jobs = jobNode->next;
+      }
+      free(jobNode);
+      jobNode = next;
+    }
+    else{
+      prev = jobNode;
+      jobNode = next;
+    }
+  }
+}
+
 jobL* addtolist(pid_t pid, commandT* cmd){
   jobL *jobList = jobs;
   jobL *newJobNode = (jobL *)malloc(sizeof(jobL));
@@ -240,9 +261,9 @@ jobL* addtolist(pid_t pid, commandT* cmd){
       jobList = jobList->next;
     }
     jobList->next = newJobNode;
+    newJobNode->id = newid + 1;
   }
 
-  newJobNode->id = newid + 1;
   if (cmd->bg){
     newJobNode->isBG = 1;
   }
@@ -272,12 +293,13 @@ static void Exec(commandT* cmd, bool forceFork)
       
     } else { /* And the child PID to the parent */
       if (cmd->bg){
-        jobL *newJob = addtolist(pid, cmd);
+        addtolist(pid, cmd);
         sigprocmask(SIG_UNBLOCK, &sigmask, NULL);
       }
       else{
-        jobL *newJob = addtolist(pid, cmd);
+        addtolist(pid, cmd);
         wait(NULL);
+        removeFromList(pid);
         sigprocmask(SIG_UNBLOCK, &sigmask, NULL);        
       }
     }
@@ -301,13 +323,16 @@ static bool IsBuiltIn(char* cmd)
 
 
 void runbgJob(int job){
-  // jobL *jobNode = jobs;
-  // while(jobNode != NULL){
-  //   if(jobNode->state == STOPPED && jobNode->id == job){
-  //     kill(jobNode->pid, SIGCONT);
-  //   }
-  //   jobNode = jobNode -> next;
-  // }
+  jobL *jobNode = jobs;
+  int status;
+  pid_t result;
+  while(jobNode != NULL){
+    result = waitpid(jobNode->pid, &status, WUNTRACED);
+    if((result) && (jobNode->pid == job)) {
+      kill(jobNode->pid, SIGCONT);
+    }
+    jobNode = jobNode -> next;
+  }
 }
 
 static void RunBuiltInCmd(commandT* cmd)
@@ -333,7 +358,7 @@ static void RunBuiltInCmd(commandT* cmd)
   }
 
   if(strcmp(cmd->argv[0], "jobs") == 0) {
-    CheckJobs();
+    CheckJobs(1);
   }
 
 }
@@ -343,18 +368,44 @@ char* getCurrentWorkingDir(){
  return getcwd(buff, 1024);
 }
 
-void CheckJobs()
+void CheckJobs(int jobCmd)
 {
   jobL *jobNode = jobs;
-
-  while(jobNode != NULL){ 
-    if (WIFEXITED(jobNode->status)){
-      printf("[%d]   DONE                %s", jobNode->id, jobNode->cmdline);
+  jobL *next = NULL; 
+  while(jobNode != NULL){    
+    next = jobNode->next;
+    if(jobNode->isBG){
+      int statusCode;
+      pid_t res = waitpid(jobNode->pid, &statusCode, WUNTRACED|WNOHANG); 
+      if (jobCmd == 0){
+        if (res){
+          printf("[%d]   Done                   %s\n", jobNode->id, jobNode->cmdline);
+          fflush(stdout);
+          removeFromList(jobNode->pid);
+          jobNode = next;
+          continue;
+        }
+      }
+      else{
+        if (WIFSTOPPED(statusCode)){
+          jobNode->status=3;
+          printf("[%d]   Stopped                %s&\n", jobNode->id, jobNode->cmdline);
+          fflush(stdout);
+        }
+        else if (res == 0){
+          jobNode->status=1;
+          printf("[%d]   Running                %s&\n", jobNode->id, jobNode->cmdline);
+          fflush(stdout);
+        }
+        else {
+          printf("COULD NOT READ STATUS\n");
+          fflush(stdout);
+        }
+      }
     }
-    jobNode = jobNode->next;
+    jobNode = next;
   }
 }
-
 
 commandT* CreateCmdT(int n)
 {

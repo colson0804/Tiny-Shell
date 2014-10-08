@@ -61,7 +61,6 @@ typedef struct command_t
   int is_redirect_in, is_redirect_out;
   int bg; 
   int status;
-  int jobNumber;
   int argc;
   char* argv[];
 } commandT;
@@ -174,7 +173,7 @@ EXTERN char* getLogin();
  *    Input: void
  *    Output: void 
  ***********************************************************************/
-EXTERN void CheckJobs();
+EXTERN void CheckJobs(int);
 
 /************External Declaration*****************************************/
 
