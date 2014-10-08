@@ -53,7 +53,7 @@
 #define VAREXTERN(x, y) extern x;
 #endif
 
-typedef enum { RUNNING, DONE, FG, FGDONE, STOPPED } state_t;
+int RUNNING = 1, DONE = 2, STOPPED = 3;
 
 typedef struct command_t
 {
@@ -62,6 +62,7 @@ typedef struct command_t
   char *redirect_in, *redirect_out;
   int is_redirect_in, is_redirect_out;
   int bg; 
+  int status;
   int jobNumber;
   int argc;
   char* argv[];

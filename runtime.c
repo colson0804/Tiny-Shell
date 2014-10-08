@@ -62,20 +62,21 @@
 
 /************Global Variables*********************************************/
 
+
 #define NBUILTINCOMMANDS (sizeof BuiltInCommands / sizeof(char*))
 
 typedef struct job_l {
   pid_t pid;
-  state_t state;
   int id;
   int isBG;
+  int status;
   char *cmdline;
   struct job_l* next;
 } jobL;
 
 /* the pids of the background processes */
 jobL *jobs = NULL;
-int jobCounter;
+int jobCounter = 1;
 /************Function Prototypes******************************************/
 /* run command */
 static void RunCmdFork(commandT*, bool);
@@ -145,11 +146,10 @@ static void RunExternalCmd(commandT* cmd, bool fork)
 {
   if (ResolveExternalCmd(cmd)){
     Exec(cmd, fork);
-    // if((strstr(cmd->cmdline, "./") != NULL) && (cmd->bg != 1)) {
-    //   cmd->jobNumber = jobCounter;
-    //   jobCounter++;
-    //   printf("[%d]  Done               %s\n", cmd->jobNumber, cmd->cmdline); 
-    // }
+    if(cmd->bg != 1) {
+      cmd->jobNumber = jobCounter;
+      jobCounter++;
+    }
   }
   else {
     printf("%s: command not found\n", cmd->argv[0]);
@@ -203,32 +203,38 @@ static bool ResolveExternalCmd(commandT* cmd)
   return FALSE; /*The command is not found or the user doesn't have enough priority to run.*/
 }
 
-void addtobglist(pid_t pid, commandT* cmd){
-  // jobL *jobList = jobs;
-  // jobL *newJobNode = (jobL *)malloc(sizeof(jobL));
+jobL* addtolist(pid_t pid, commandT* cmd){
+  jobL *jobList = jobs;
+  jobL *newJobNode = (jobL *)malloc(sizeof(jobL));
 
-  // newJobNode->next = NULL;
-  // int newid = 0;
+  newJobNode->next = NULL;
+  int newid = 0;
 
-  // if (jobList == NULL){
-  //   newJobNode->id = 1;
-  //   jobs = newJobNode;
-  // }
-  // else{
-  //   newid = jobList->id;
-  //   while(jobList->next !=NULL){
-  //     if(newid < jobList->id)
-  //       newid = jobList->id;
-  //     jobList = jobList->next;
-  //   }
-  //   jobList->next = newJobNode;
-  // }
+  if (jobList == NULL){
+    newJobNode->id = 1;
+    jobs = newJobNode;
+  }
+  else{
+    newid = jobList->id;
+    while(jobList->next !=NULL){
+      if(newid < jobList->id)
+        newid = jobList->id;
+      jobList = jobList->next;
+    }
+    jobList->next = newJobNode;
+  }
 
-  // newJobNode->id = newid + 1;
-  // newJobNode->isBG = 1;
-  // newJobNode->pid = pid;
-  // newJobNode->cmdline = cmd->cmdline;
-  // newJobNode->state = RUNNING;
+  newJobNode->id = newid + 1;
+  if (cmd->bg){
+    newJobNode->isBG = 1;
+  }
+  else{
+    newJobNode->isBG = 0;
+  }
+  newJobNode->pid = pid;
+  newJobNode->cmdline = cmd->cmdline;
+  newJobNode->next = NULL;
+  return newJobNode;
 }
 
 static void Exec(commandT* cmd, bool forceFork)
@@ -244,15 +250,15 @@ static void Exec(commandT* cmd, bool forceFork)
     if (pid == 0){ /* Return 0 to the child */
       // Need to pass path name and arguments to execvp
       setpgid(0,0);
-
       execv(cmd->name, cmd->argv);
+      
     } else { /* And the child PID to the parent */
       if (cmd->bg){
-        addtobglist(pid, cmd);
+        jobL *newJob = addtolist(pid, cmd);
         sigprocmask(SIG_UNBLOCK, &sigmask, NULL);
       }
       else{
-        wait(NULL);  
+        wait(NULL);
         sigprocmask(SIG_UNBLOCK, &sigmask, NULL);        
       }
     }
@@ -276,14 +282,13 @@ static bool IsBuiltIn(char* cmd)
 
 
 void runbgJob(int job){
-  jobL *jobNode = jobs;
-  while(jobNode != NULL){
-    if(jobNode->state == STOPPED && jobNode->id == job){
-      kill(jobNode->pid, SIGCONT);
-      jobNode->state = RUNNING;
-    }
-    jobNode = jobNode -> next;
-  }
+  // jobL *jobNode = jobs;
+  // while(jobNode != NULL){
+  //   if(jobNode->state == STOPPED && jobNode->id == job){
+  //     kill(jobNode->pid, SIGCONT);
+  //   }
+  //   jobNode = jobNode -> next;
+  // }
 }
 
 static void RunBuiltInCmd(commandT* cmd)
@@ -321,11 +326,14 @@ char* getCurrentWorkingDir(){
 
 void CheckJobs()
 {
-  // jobL *jobList = jobs;
-  // while(jobList != NULL){
-  //   printf("[%d]   Running                 %s", jobList->id, jobList->cmdline);
-  //   jobList = jobList->next;
-  // }
+  jobL *jobNode = jobs;
+
+  while(jobNode != NULL){ 
+    if (WIFEXITED(jobNode->status)){
+      printf("[%d]   DONE                %s", jobNode->id, jobNode->cmdline);
+    }
+    jobNode = jobNode->next;
+  }
 }
 
 
