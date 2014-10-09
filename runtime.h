@@ -173,7 +173,7 @@ EXTERN char* getLogin();
  *    Input: void
  *    Output: void 
  ***********************************************************************/
-EXTERN void CheckJobs(int);
+EXTERN void CheckJobs();
 
 EXTERN void IntFgProc();
 

@@ -146,10 +146,8 @@ void RunCmdRedirIn(commandT* cmd, char* file)
 
 void StopFgProc() {
   jobL* current = jobs;
-  printf("First job: %d\n", current->pid);
   while (current != NULL) {
     if (!current->isBG) {
-      printf("The foreground job is %d\n", current->pid);
       current->status = STOPPED;
       kill(-current->pid, SIGTSTP);
     }
@@ -217,15 +215,12 @@ static bool ResolveExternalCmd(commandT* cmd)
 }
 
 void removeFromList(pid_t pid){
-  fflush(stdout);
-
   jobL *jobNode = jobs;
   jobL *prev = NULL;
   jobL *next = NULL;
   while(jobNode != NULL){
     next = jobNode->next;
     if (jobNode->pid == pid){
-      fflush(stdout);
       if (prev){
         prev->next = next;
       }
@@ -273,6 +268,7 @@ jobL* addtolist(pid_t pid, commandT* cmd){
   newJobNode->pid = pid;
   newJobNode->cmdline = cmd->cmdline;
   newJobNode->next = NULL;
+  newJobNode->status = RUNNING;
   return newJobNode;
 }
 
@@ -356,6 +352,23 @@ void runbgJob(int job){
   }
 }
 
+void runJobCmd()
+{
+  jobL *jobNode = jobs;
+  while(jobNode != NULL){    
+    int statusCode;
+    pid_t res = waitpid(jobNode->pid, &statusCode, WUNTRACED|WNOHANG); 
+    if (WIFSTOPPED(statusCode)){
+      printf("[%d]   Stopped                %s&\n", jobNode->jobNum, jobNode->cmdline);
+      fflush(stdout);
+    }
+    else if (res == 0){
+      printf("[%d]   Running                %s&\n", jobNode->jobNum, jobNode->cmdline);
+      fflush(stdout);
+    }
+    jobNode = jobNode->next;
+  }
+}
 
 static void RunBuiltInCmd(commandT* cmd)
 {
@@ -373,8 +386,6 @@ static void RunBuiltInCmd(commandT* cmd)
       chdir(newCwd);
     }
   }
-
-
   if(strcmp(cmd->argv[0], "bg") == 0) {
     runbgJob(atoi(cmd->argv[1]));
   }
@@ -384,53 +395,29 @@ static void RunBuiltInCmd(commandT* cmd)
   }
 
   if(strcmp(cmd->argv[0], "jobs") == 0) {
-    CheckJobs(1);
-  }
+    runJobCmd();
+  }   
+}
 
+void CheckJobs(){
+  jobL *jobNode = jobs;
+  jobL *next = NULL; 
+  while(jobNode != NULL){  
+    next = jobNode->next;
+    int statusCode;
+    pid_t res = waitpid(jobNode->pid, &statusCode, WNOHANG); 
+    if (res){
+      printf("[%d]   Done                   %s\n", jobNode->jobNum, jobNode->cmdline);
+      fflush(stdout);
+      removeFromList(jobNode->pid);
+    } 
+    jobNode = next;
+  } 
 }
 
 char* getCurrentWorkingDir(){
  char buff[1024];
  return getcwd(buff, 1024);
-}
-
-void CheckJobs(int jobCmd)
-{
-  jobL *jobNode = jobs;
-  jobL *next = NULL; 
-  while(jobNode != NULL){    
-    next = jobNode->next;
-    if(jobNode->isBG){
-      int statusCode;
-      pid_t res = waitpid(jobNode->pid, &statusCode, WUNTRACED|WNOHANG); 
-      if (jobCmd == 0){
-        if (res){
-          printf("[%d]   Done                   %s\n", jobNode->jobNum, jobNode->cmdline);
-          fflush(stdout);
-          removeFromList(jobNode->pid);
-          jobNode = next;
-          continue;
-        }
-      }
-      else{
-        if (WIFSTOPPED(statusCode)){
-          jobNode->status=3;
-          printf("[%d]   Stopped                %s&\n", jobNode->jobNum, jobNode->cmdline);
-          fflush(stdout);
-        }
-        else if (res == 0){
-          jobNode->status=1;
-          printf("[%d]   Running                %s&\n", jobNode->jobNum, jobNode->cmdline);
-          fflush(stdout);
-        }
-        else {
-          printf("COULD NOT READ STATUS\n");
-          fflush(stdout);
-        }
-      }
-    }
-    jobNode = next;
-  }
 }
 
 commandT* CreateCmdT(int n)
