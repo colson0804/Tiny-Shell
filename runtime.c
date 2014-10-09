@@ -150,6 +150,7 @@ void StopFgProc() {
     if (!current->isBG) {
       current->status = STOPPED;
       kill(-current->pid, SIGTSTP);
+      return;
     }
     current = current->next;
   }
@@ -214,7 +215,7 @@ static bool ResolveExternalCmd(commandT* cmd)
   return FALSE; /*The command is not found or the user doesn't have enough priority to run.*/
 }
 
-void removeFromList(pid_t pid){
+void removeFromList(pid_t pid) {
   jobL *jobNode = jobs;
   jobL *prev = NULL;
   jobL *next = NULL;
@@ -237,7 +238,7 @@ void removeFromList(pid_t pid){
   }
 }
 
-jobL* addtolist(pid_t pid, commandT* cmd){
+void addtolist(pid_t pid, commandT* cmd){
   jobL *jobList = jobs;
   jobL *newJobNode = (jobL *)malloc(sizeof(jobL));
 
@@ -269,7 +270,6 @@ jobL* addtolist(pid_t pid, commandT* cmd){
   newJobNode->cmdline = cmd->cmdline;
   newJobNode->next = NULL;
   newJobNode->status = RUNNING;
-  return newJobNode;
 }
 
 static void Exec(commandT* cmd, bool forceFork)
@@ -296,11 +296,11 @@ static void Exec(commandT* cmd, bool forceFork)
       else{
         int statusCode;
         addtolist(pid, cmd);
-        while(waitpid(pid, &statusCode, WUNTRACED|WNOHANG) == 0){
+        while(waitpid(pid, &statusCode, WNOHANG|WUNTRACED) == 0){
           sleep(1);
         }
         removeFromList(pid);
-        sigprocmask(SIG_UNBLOCK, &sigmask, NULL);  
+        sigprocmask(SIG_UNBLOCK, &sigmask, NULL); 
       }
     }
  } 
@@ -355,10 +355,10 @@ void runbgJob(int job){
 void runJobCmd()
 {
   jobL *jobNode = jobs;
-  while(jobNode != NULL){    
+  while(jobNode != NULL) {   
     int statusCode;
     pid_t res = waitpid(jobNode->pid, &statusCode, WUNTRACED|WNOHANG); 
-    if (WIFSTOPPED(statusCode)){
+    if (jobNode->status == STOPPED){
       printf("[%d]   Stopped                %s&\n", jobNode->jobNum, jobNode->cmdline);
       fflush(stdout);
     }
