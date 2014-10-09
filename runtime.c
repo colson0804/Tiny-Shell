@@ -77,9 +77,15 @@ typedef struct job_l {
   struct job_l* next;
 } jobL;
 
+typedef struct alias_l {
+  char *alias;
+  char* realCmd;
+  struct alias_l* next;
+} aliasL;
+
 /* the pids of the background processes */
 jobL *jobs = NULL;
-
+aliasL *aliasList = NULL;
 
 /************Function Prototypes******************************************/
 /* run command */
@@ -318,6 +324,8 @@ static bool IsBuiltIn(char* cmd)
     return TRUE;
   } else if (strcmp(cmd, "jobs") == 0) {
     return TRUE;
+  } else if (strcmp(cmd, "alias") == 0){
+    return TRUE;
   }
   return FALSE;     
 }
@@ -338,8 +346,6 @@ void runInFg(int job){
     }
     jobNode = jobNode -> next;
   }
-  printf("end of fg\n");
-  fflush(stdout);
 }
 
 void runbgJob(int job){
@@ -372,13 +378,30 @@ void runJobCmd()
   }
 }
 
+static void removeAlias(char *cmd){
+
+}
+
+static void runAlias(commandT* newCmd){
+  aliasL *aliasNode = aliasList;
+  if (newCmd->argc == 0){
+    while (aliasNode != NULL){
+      printf("alias %s='%s\n'", aliasNode->alias, aliasNode->realCmd);
+    }
+  }
+  else{
+    //foo='ls -lh' is ending after the space...
+    //we need to add stuff to the interpreter to look for "alias" and "="
+  }
+}
+
 static void RunBuiltInCmd(commandT* cmd)
 {
   if(strcmp(cmd->argv[0], "cd") == 0) {
     char* input = cmd->argv[1];
     if (input == NULL){
        if(chdir(getenv("HOME")))
-        printf("Error changing director\n");
+        printf("Error changing directory\n");
        return;
     }
     char* cwd = getCurrentWorkingDir();
@@ -387,18 +410,22 @@ static void RunBuiltInCmd(commandT* cmd)
     struct stat s;
     if(stat(input, &s) == 0){
       if(chdir(newCwd))
-        printf("Error changing director\n");
+        printf("Error changing directory\n");
     }
   }
-  if(strcmp(cmd->argv[0], "bg") == 0) {
+  else if (strcmp(cmd->argv[0], "unalias") == 0){
+    removeAlias(cmd->argv[1]);
+  }
+  else if (strcmp(cmd->argv[0], "alias") == 0){
+    runAlias(cmd);
+  }
+  else if(strcmp(cmd->argv[0], "bg") == 0) {
     runbgJob(atoi(cmd->argv[1]));
   }
-
-  if(strcmp(cmd->argv[0], "fg") == 0) {
+  else if(strcmp(cmd->argv[0], "fg") == 0) {
     runInFg(atoi(cmd->argv[1]));
   }
-
-  if(strcmp(cmd->argv[0], "jobs") == 0) {
+  else if(strcmp(cmd->argv[0], "jobs") == 0) {
     runJobCmd();
   }   
 }

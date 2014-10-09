@@ -1,67 +1,461 @@
-test02: PASS
-test03: PASS
-test04: PASS
-test05: PASS
-test06: PASS
-test07: PASS
-test08: PASS
-test09: PASS
-test10: PASS
-test11: PASS
-test12: PASS
-test13: PASS
-test14: FAILED
+./sdriver.pl -t test29.in -s .././tsh
+
+RUN EXTRA CREDIT TEST CASES
+test29: FAILED
 Input:
-bash -c "sleep 4; echo hello1;"
-SLEEP 1
-TSTP
-SLEEP 1
-jobs
-bg 1
-jobs
-fg 1
-echo hello2
-sleep 4
+alias showdir='ls'
+alias foo='ls -lh'
+alias test='whoami'
+alias
+unalias showdir
+unalias foo
+unalias test
 exit
 -- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
-                        | [1]   Stopped                bash -c "sleep 4; echo hello1;"
-[1]   Stopped                 bash -c "sleep 4; echo hello1;"         | [1]   Stopped                bash -c "sleep 4; echo hello1;"
-[1]   Stopped                 bash -c "sleep 4; echo hello1;"           | [1]   Running                bash -c "sleep 4; echo hello1;"&
-[1]   Running                 bash -c "sleep 4; echo hello1;" &         <
-hello1                    hello1
-hello2                    hello2
+alias foo='ls -lh'                    | alias: command not found
+alias showdir='ls'                    | alias: command not found
+alias test='whoami'                   | alias: command not found
+                        > alias: command not found
+                        > unalias: command not found
+                        > unalias: command not found
+                        > unalias: command not found
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
-test15: PASS
-test16: PASS
-test17: FAILED
+test30: FAILED
 Input:
-bash -c "sleep 3; echo hello1;"
-SLEEP 1
-TSTP
-jobs
-bg 1
-jobs
-fg 1
-echo hello2
-jobs
-bash -c "sleep 3; echo hello3;" &
-jobs
-fg 1
-echo hello4
-sleep 3
+alias showdir='ls '
+alias home='~/'
+showdir home
+unalias showdir
+unalias home
 exit
 -- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
-                        | [1]   Stopped                bash -c "sleep 3; echo hello1;"
-[1]   Stopped                 bash -c "sleep 3; echo hello1;"         | [1]   Stopped                bash -c "sleep 3; echo hello1;"
-[1]   Stopped                 bash -c "sleep 3; echo hello1;"           | [1]   Running                bash -c "sleep 3; echo hello1;"&
-[1]   Running                 bash -c "sleep 3; echo hello1;" &         <
-hello1                    hello1
-hello2                    hello2
-[1]   Running                 bash -c "sleep 3; echo hello3;" &         | [1]   Running                bash -c "sleep 3; echo hello3;" &
-hello3                    hello3
-hello4                    hello4
+Desktop                       | alias: command not found
+Documents                     | alias: command not found
+Downloads                     | showdir: command not found
+examples.desktop                    | unalias: command not found
+Music                       | unalias: command not found
+Pictures                      <
+Public                        <
+Templates                     <
+Videos                        <
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
-test18: PASS
+test20: FAILED
+Input:
+ls -l | grep test
+ls -l | grep 2
+ls -l | wc -l
+exit
+-- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
+-rw-rw-r-- 1 aqualab aqualab    32 Oct  9 11:11 test1.txt         <
+-rw-rw-r-- 1 aqualab aqualab    43 Oct  9 11:11 test.20           <
+-rw-rw-r-- 1 aqualab aqualab    25 Oct  9 11:11 test.200          <
+-rw-rw-r-- 1 aqualab aqualab    24 Oct  9 11:11 test.23           <
+-rw-rw-r-- 1 aqualab aqualab    23 Oct  9 11:11 test.3            <
+-rw-rw-r-- 1 aqualab aqualab    39 Oct  9 11:11 test.4            <
+-rw-rw-r-- 1 aqualab aqualab    47 Oct  9 11:11 test.5            <
+total 216                     <
+drwxrwxr-x 3 aqualab aqualab  4096 Oct  9 11:11 dir21           <
+-rw-rw-r-- 1 aqualab aqualab 25340 Oct  9 11:11 runtime.o         <
+-rw-rw-r-- 1 aqualab aqualab    32 Oct  9 11:11 test1.txt         <
+-rw-rw-r-- 1 aqualab aqualab    43 Oct  9 11:11 test.20           <
+-rw-rw-r-- 1 aqualab aqualab    25 Oct  9 11:11 test.200          <
+-rw-rw-r-- 1 aqualab aqualab    24 Oct  9 11:11 test.23           <
+-rw-rw-r-- 1 aqualab aqualab    23 Oct  9 11:11 test.3            <
+-rw-rw-r-- 1 aqualab aqualab    15 Oct  9 11:11 text2.txt         <
+-rwxrwxr-x 1 aqualab aqualab 43412 Oct  9 11:11 tsh           <
+-rw-rw-r-- 1 aqualab aqualab  6692 Oct  9 11:11 tsh.o           <
+-rwxr-xr-x 1 aqualab aqualab 50370 Oct  9 11:11 tsh-orig.32         <
+24                        <
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+test22: FAILED
+Input:
+ls -l test.3 test.4 test.5 test.23 | wc -w
+grep test longlist.txt
+cat longlist.txt
+grep 3 longlist.txt | wc -w | cat | wc
+exit
+-- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
+36                        <
+2 test                    2 test
+3 test                    3 test
+2 test                    2 test
+-e longlist                 -e longlist
+txt                   txt
+2 test                    2 test
+2 world                   2 world
+3 test                    3 test
+2 test                    2 test
+      1       1       2                   <
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+test23: FAILED
+Input:
+ls -l | grep test
+ls -l | grep test | grep 2
+ls -l | grep test | grep 2 | wc
+exit
+-- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
+-rw-rw-r-- 1 aqualab aqualab    32 Oct  9 11:11 test1.txt         <
+-rw-rw-r-- 1 aqualab aqualab    43 Oct  9 11:11 test.20           <
+-rw-rw-r-- 1 aqualab aqualab    25 Oct  9 11:11 test.200          <
+-rw-rw-r-- 1 aqualab aqualab    24 Oct  9 11:11 test.23           <
+-rw-rw-r-- 1 aqualab aqualab    23 Oct  9 11:11 test.3            <
+-rw-rw-r-- 1 aqualab aqualab    39 Oct  9 11:11 test.4            <
+-rw-rw-r-- 1 aqualab aqualab    47 Oct  9 11:11 test.5            <
+-rw-rw-r-- 1 aqualab aqualab    32 Oct  9 11:11 test1.txt         <
+-rw-rw-r-- 1 aqualab aqualab    43 Oct  9 11:11 test.20           <
+-rw-rw-r-- 1 aqualab aqualab    25 Oct  9 11:11 test.200          <
+-rw-rw-r-- 1 aqualab aqualab    24 Oct  9 11:11 test.23           <
+-rw-rw-r-- 1 aqualab aqualab    23 Oct  9 11:11 test.3            <
+      5      45     282                   <
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+test31: FAILED
+Input:
+ls -la ../ > dir.test.txt
+wc < dir.test.txt
+pwd > cur.dir.test.txt
+ls < cur.dir.test.txt
+exit
+-- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
+  293  2630 20098                   | total 1176
+                        > drwxrwxrwt 290 root    root    16384 Oct  9 11:11 .
+                        > drwxr-xr-x  22 root    root     4096 Sep 22 17:00 ..
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:30 cs343.tests.0aG3cd
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:18 cs343.tests.0RsLBr
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:18 cs343.tests.14JTaq
+                        > drwx------   3 aqualab aqualab  4096 Oct  9 01:53 cs343.tests.1lnAsR
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 20:56 cs343.tests.1MDbsn
+                        > drwx------   3 aqualab aqualab  4096 Oct  9 01:17 cs343.tests.1rtd0G
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 16:51 cs343.tests.1XrZxv
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 11:23 cs343.tests.1zpdoi
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 23:59 cs343.tests.2Ib2Nu
+                        > drwx------   2 aqualab aqualab  4096 Oct  6 22:53 cs343.tests.2LOq31
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:08 cs343.tests.2NpE3Y
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 11:27 cs343.tests.2PkHSh
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 22:38 cs343.tests.2SOyLJ
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:37 cs343.tests.2w2TuM
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 23:16 cs343.tests.32gszd
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 01:16 cs343.tests.3F7zvX
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 12:50 cs343.tests.3f8kx5
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 20:28 cs343.tests.3g6Auw
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 23:15 cs343.tests.3Kv2mm
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 11:34 cs343.tests.3WvIun
+                        > drwx------   2 aqualab aqualab  4096 Oct  6 22:55 cs343.tests.40XXI3
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:34 cs343.tests.4AZ115
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:53 cs343.tests.4JDeoA
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 12:45 cs343.tests.4ODN4C
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 16:47 cs343.tests.4PBB79
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 16:24 cs343.tests.4xD7gx
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:22 cs343.tests.52w3vT
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 18:48 cs343.tests.5va1xk
+                        > drwx------   2 aqualab aqualab  4096 Oct  6 22:45 cs343.tests.622VPl
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 12:49 cs343.tests.6979Gq
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 12:45 cs343.tests.6F6zWk
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 01:38 cs343.tests.6jG0di
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 00:52 cs343.tests.7fUaS8
+                        > drwx------   3 aqualab aqualab  4096 Oct  6 22:34 cs343.tests.7p3ZdS
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 00:02 cs343.tests.7t6LyX
+                        > drwx------   2 aqualab aqualab  4096 Oct  6 22:54 cs343.tests.7YDV0D
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 00:11 cs343.tests.8Bpuvp
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 01:25 cs343.tests.8P8k6y
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 11:31 cs343.tests.8rN4Ad
+                        > drwx------   3 aqualab aqualab  4096 Oct  9 00:55 cs343.tests.8S4nXj
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 11:28 cs343.tests.8u8p7e
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:24 cs343.tests.8UHtNR
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:09 cs343.tests.9LofgW
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 18:21 cs343.tests.9qWUYN
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 12:43 cs343.tests.9sn8XF
+                        > drwx------   2 aqualab aqualab  4096 Oct  6 22:45 cs343.tests.9ZXRC0
+                        > drwx------   3 aqualab aqualab  4096 Oct  9 00:52 cs343.tests.A0LpCa
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 23:58 cs343.tests.A69yeg
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 12:49 cs343.tests.A9NvvR
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 20:18 cs343.tests.aF8T9L
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 12:40 cs343.tests.aNrEmi
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 20:22 cs343.tests.ao2uie
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 23:03 cs343.tests.aZmcIC
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:28 cs343.tests.B5OijA
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 00:02 cs343.tests.b8Iouk
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:26 cs343.tests.Baa8Zi
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 02:00 cs343.tests.bc6AyN
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 20:37 cs343.tests.BLflNI
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:38 cs343.tests.bpBRCK
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 21:00 cs343.tests.C4AZ7V
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:53 cs343.tests.CadFs9
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 20:04 cs343.tests.cC2sZr
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 16:24 cs343.tests.CKfHoK
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 12:46 cs343.tests.CMkkoM
+                        > drwx------   3 aqualab aqualab  4096 Oct  6 22:49 cs343.tests.CPqF9W
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 11:34 cs343.tests.Cult4C
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 20:29 cs343.tests.CuUBim
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 23:57 cs343.tests.CuuVCq
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 20:23 cs343.tests.CVTTEr
+                        > drwx------   2 aqualab aqualab  4096 Oct  6 22:57 cs343.tests.cZeAbn
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 22:37 cs343.tests.d0A4A3
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:47 cs343.tests.d8ZWVb
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 01:53 cs343.tests.DAx7JG
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 12:44 cs343.tests.dHTpH2
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 11:27 cs343.tests.dI3uaC
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 18:51 cs343.tests.djSvL0
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:23 cs343.tests.DOpt3z
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:41 cs343.tests.Du31vk
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:37 cs343.tests.dUENXf
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 00:00 cs343.tests.dWCi2Q
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:23 cs343.tests.dXz2Zm
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 22:33 cs343.tests.E10s8M
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 18:29 cs343.tests.e4mMpJ
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 23:15 cs343.tests.eA5Bth
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 00:02 cs343.tests.eNQkM1
+                        > drwx------   3 aqualab aqualab  4096 Oct  9 00:48 cs343.tests.etuCC2
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 16:27 cs343.tests.EYFCBt
+                        > drwx------   2 aqualab aqualab  4096 Oct  6 22:46 cs343.tests.EygZIx
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 12:39 cs343.tests.FCtWjr
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 02:07 cs343.tests.fDTC8L
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:25 cs343.tests.feyxv7
+                        > drwx------   3 aqualab aqualab  4096 Oct  9 01:25 cs343.tests.fJHWj3
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 16:21 cs343.tests.FLnOou
+                        > drwx------   2 aqualab aqualab  4096 Oct  6 22:53 cs343.tests.FNcDjN
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 11:28 cs343.tests.FUIQ67
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 22:36 cs343.tests.FVfRvd
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 00:48 cs343.tests.fxQzJn
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:21 cs343.tests.fZfj8x
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 16:24 cs343.tests.g6O5Wm
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 22:52 cs343.tests.G84Tdo
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:48 cs343.tests.GhZnmO
+                        > drwx------   3 aqualab aqualab  4096 Oct  9 01:38 cs343.tests.GJmh9P
+                        > drwx------   2 aqualab aqualab  4096 Oct  6 22:44 cs343.tests.gkNE3I
+                        > drwx------   3 aqualab aqualab  4096 Oct  9 11:15 cs343.tests.GMItkS
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 01:55 cs343.tests.gmwjG4
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 00:11 cs343.tests.GoHhKg
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 11:26 cs343.tests.gpA3JH
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:37 cs343.tests.gPWaPc
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 00:11 cs343.tests.grNboq
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 01:18 cs343.tests.GUdiaN
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 01:16 cs343.tests.gwJWz2
+                        > drwx------   2 aqualab aqualab  4096 Oct  6 22:49 cs343.tests.gzKk8g
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:13 cs343.tests.H87COa
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 12:40 cs343.tests.HEqh7u
+                        > drwx------   3 aqualab aqualab  4096 Oct  9 01:30 cs343.tests.hfHJdP
+                        > drwx------   2 aqualab aqualab  4096 Oct  6 22:46 cs343.tests.ht5CPo
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 23:57 cs343.tests.HVQDdU
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:30 cs343.tests.I5Ofoi
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:40 cs343.tests.iDBKZt
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:51 cs343.tests.IgycbQ
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 00:55 cs343.tests.IN5c6c
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 20:25 cs343.tests.ipT2Mu
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 11:31 cs343.tests.IPXGqJ
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 11:23 cs343.tests.IVvo52
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:05 cs343.tests.IWffMl
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 21:02 cs343.tests.iYW2ke
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 16:13 cs343.tests.J45S2u
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 18:48 cs343.tests.J6AajK
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 22:30 cs343.tests.j6LTfZ
+                        > drwx------   3 aqualab aqualab  4096 Oct  9 01:23 cs343.tests.jAS5lq
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 01:27 cs343.tests.jDcAAo
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:30 cs343.tests.JGvbyN
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 18:31 cs343.tests.jh5VFL
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 16:47 cs343.tests.JHQWZ9
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 20:56 cs343.tests.jKa0TN
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:20 cs343.tests.jUCQML
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 01:32 cs343.tests.juLCai
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 12:42 cs343.tests.jVzQbF
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 20:06 cs343.tests.jW3gBF
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 20:08 cs343.tests.JxSwyb
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:30 cs343.tests.K5x4Rs
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 01:30 cs343.tests.kmRoGJ
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 22:39 cs343.tests.Knni6h
+                        > drwx------   3 aqualab aqualab  4096 Oct  6 22:56 cs343.tests.kQMoNm
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 11:26 cs343.tests.KrpqcM
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 00:50 cs343.tests.KtscAL
+                        > drwx------   2 aqualab aqualab  4096 Oct  6 22:56 cs343.tests.KwHIdp
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:19 cs343.tests.kyoJd2
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 00:57 cs343.tests.lA0pPI
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 01:29 cs343.tests.lAR8hh
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 12:39 cs343.tests.lAtvyd
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:33 cs343.tests.LFVwkN
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 23:15 cs343.tests.luBFmm
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:31 cs343.tests.luIPzn
+                        > drwx------   3 aqualab aqualab  4096 Oct  9 01:29 cs343.tests.Lvm5S7
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 12:44 cs343.tests.LyFZ04
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 01:29 cs343.tests.LZ6rrx
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:21 cs343.tests.m6coGa
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 20:05 cs343.tests.mB6Wmw
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 22:28 cs343.tests.MDrf7i
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 11:36 cs343.tests.mgVKHB
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 11:26 cs343.tests.MhZd0h
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:18 cs343.tests.MjYleP
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 23:52 cs343.tests.Mv4cMq
+                        > drwx------   3 aqualab aqualab  4096 Oct  6 22:45 cs343.tests.mZ9pyk
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 11:37 cs343.tests.MzweLU
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 22:41 cs343.tests.n90b5l
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:29 cs343.tests.naYfhu
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:27 cs343.tests.NB5AM5
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 23:12 cs343.tests.NfCK2f
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:53 cs343.tests.nfkxtC
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 20:27 cs343.tests.Nn1Qya
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 02:00 cs343.tests.NwKBAU
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:19 cs343.tests.o3ObLK
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:39 cs343.tests.O7nSpm
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:25 cs343.tests.o8qv7Z
+                        > drwx------   2 aqualab aqualab  4096 Oct  6 22:44 cs343.tests.od4u1y
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 18:21 cs343.tests.OidYnz
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 11:11 cs343.tests.ojbpxP
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:52 cs343.tests.Okc4dp
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 16:26 cs343.tests.oP7uxn
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 23:59 cs343.tests.oQktVD
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:31 cs343.tests.oQx9s1
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 22:53 cs343.tests.OsEuci
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 23:03 cs343.tests.Ou5pY0
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 12:45 cs343.tests.OUlMwl
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:30 cs343.tests.P4tG6L
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 16:18 cs343.tests.P4xWqR
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 23:03 cs343.tests.P5nXyV
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 01:36 cs343.tests.p7nYv3
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 00:00 cs343.tests.phiZgr
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:53 cs343.tests.Plyf6K
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:05 cs343.tests.POFdGO
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 02:01 cs343.tests.pp79Hp
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 12:41 cs343.tests.PsKrmT
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:42 cs343.tests.PtM9Kg
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 02:08 cs343.tests.pxC0pS
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 11:35 cs343.tests.pXrKsc
+                        > drwx------   3 aqualab aqualab  4096 Oct  6 22:44 cs343.tests.pzhaih
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 01:23 cs343.tests.Q8RWWj
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 11:26 cs343.tests.Q9awrF
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:28 cs343.tests.qI9AvI
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 23:15 cs343.tests.QImcNy
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:05 cs343.tests.QiXQzF
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:29 cs343.tests.QO2Ktt
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 18:29 cs343.tests.Qpf9Fa
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 12:39 cs343.tests.qralVc
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:23 cs343.tests.QXIK6Z
+                        > drwx------   3 aqualab aqualab  4096 Oct  6 22:46 cs343.tests.qxLrmK
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:21 cs343.tests.QyzLs7
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 20:05 cs343.tests.qzIftQ
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 11:29 cs343.tests.Qzp9SA
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:49 cs343.tests.rEZOvk
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:28 cs343.tests.rJ2lmt
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:21 cs343.tests.rS0eMz
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 11:27 cs343.tests.Ry1cp1
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 11:36 cs343.tests.s3oTOZ
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 18:21 cs343.tests.S5E1fC
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 01:35 cs343.tests.Sbn0KX
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 23:13 cs343.tests.scxkkl
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 21:00 cs343.tests.skTuyf
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 23:57 cs343.tests.SrpqwP
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:23 cs343.tests.SSj7eN
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 16:48 cs343.tests.sY5YyM
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:36 cs343.tests.T3FXi7
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:38 cs343.tests.T4yUEK
+                        > drwx------   3 aqualab aqualab  4096 Oct  9 01:35 cs343.tests.t7pfM9
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 16:19 cs343.tests.TCIVIl
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 21:04 cs343.tests.tG1GMj
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 11:15 cs343.tests.TiZRZ6
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 23:59 cs343.tests.TKLiPr
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 01:24 cs343.tests.tLP96P
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:29 cs343.tests.tT1JYh
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 16:53 cs343.tests.U5SRP3
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 12:42 cs343.tests.UEA49h
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 20:56 cs343.tests.UJXgWx
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:24 cs343.tests.UQ7X5M
+                        > drwx------   2 aqualab aqualab  4096 Oct  6 22:34 cs343.tests.UTmztx
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 18:52 cs343.tests.uu0hIR
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:36 cs343.tests.Uy1aya
+                        > drwx------   3 aqualab aqualab  4096 Oct  9 02:07 cs343.tests.v11APw
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 00:00 cs343.tests.V3HXLa
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:07 cs343.tests.v3KonD
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 20:56 cs343.tests.v4HYqr
+                        > drwx------   3 aqualab aqualab  4096 Oct  8 23:12 cs343.tests.V8IESw
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:27 cs343.tests.Vi6AF2
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 22:30 cs343.tests.VjR1rp
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 18:51 cs343.tests.VPpvVT
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 11:31 cs343.tests.vvXDYm
+                        > drwx------   3 aqualab aqualab  4096 Oct  6 22:54 cs343.tests.VvZKxJ
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:26 cs343.tests.vyv9RR
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 23:52 cs343.tests.W4Y3IZ
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 16:21 cs343.tests.wAoQQX
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:30 cs343.tests.WeUCEr
+                        > drwx------   3 aqualab aqualab  4096 Oct  9 01:15 cs343.tests.Wggicl
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 18:50 cs343.tests.whyVzL
+                        > drwx------   3 aqualab aqualab  4096 Oct  6 22:53 cs343.tests.wjt3Qh
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 20:24 cs343.tests.wnTUgk
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 01:40 cs343.tests.wNyGZq
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 01:15 cs343.tests.wohnae
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 20:23 cs343.tests.woRkCM
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:48 cs343.tests.x25cfJ
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:47 cs343.tests.X2ZBss
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 21:00 cs343.tests.XaFGZa
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 21:02 cs343.tests.XeTZDH
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 20:57 cs343.tests.XEVjuT
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:47 cs343.tests.XgGfXV
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:27 cs343.tests.xMVrIY
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 22:31 cs343.tests.xQ3rf5
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:13 cs343.tests.xXPVDh
+                        > drwx------   3 aqualab aqualab  4096 Oct  7 20:30 cs343.tests.Y6MoZA
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 23:53 cs343.tests.YgPH3a
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 20:04 cs343.tests.YiqMf7
+                        > drwx------   2 aqualab aqualab  4096 Oct  6 22:49 cs343.tests.YSjJuV
+                        > drwx------   2 aqualab aqualab  4096 Oct  9 00:54 cs343.tests.yYXELF
+                        > drwx------   2 aqualab aqualab  4096 Oct  6 22:34 cs343.tests.z6gMU6
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 22:53 cs343.tests.z6v6uN
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:22 cs343.tests.z7tqyL
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 23:58 cs343.tests.zaKSg9
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 20:56 cs343.tests.zAn3c5
+                        > drwx------   2 aqualab aqualab  4096 Oct  8 23:15 cs343.tests.zAnGEM
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 23:58 cs343.tests.zdBo4b
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:30 cs343.tests.ZontpE
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 16:53 cs343.tests.zQgceR
+                        > drwx------   2 aqualab aqualab  4096 Oct  7 20:37 cs343.tests.zwDk08
+                        > drwxrwxrwt   2 root    root     4096 Oct  6 22:32 .ICE-unix
+                        > drwx------   2 aqualab aqualab  4096 Oct  6 22:32 ssh-mKxSYUhMxoMo
+                        > -rw-rw-r--   1 aqualab aqualab     0 Oct  6 22:32 unity_support_test.1
+                        > -r--r--r--   1 root    root       11 Oct  6 22:32 .X0-lock
+                        > drwxrwxrwt   2 root    root     4096 Oct  6 22:32 .X11-unix
+                        >       0       0       0
+                        > /tmp/cs343.tests.GMItkS
+catdogexit.txt                  catdogexit.txt
+cat.txtt                  cat.txtt
+cur.dir.test.txt                cur.dir.test.txt
+dir21                   dir21
+dir.test.txt                  dir.test.txt
+dogcatexit.exit                 dogcatexit.exit
+dogexit.txt                 dogexit.txt
+dummy                   dummy
+interpreter.o                 interpreter.o
+io.o                    io.o
+longlist.txt                  longlist.txt
+myspin                    myspin
+runtime.o                 runtime.o
+sdriver.pl                  sdriver.pl
+test1.txt                 test1.txt
+test.20                   test.20
+test.200                  test.200
+test.23                   test.23
+test.3                    test.3
+test.4                    test.4
+test.5                    test.5
+text2.txt                 text2.txt
+tsh                   tsh
+tsh.o                   tsh.o
+tsh-orig.32                 tsh-orig.32
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+test32: FAILED
+Input:
+pwd > cur.dir.txt
+cat cur.dir.txt
+wc < cur.dir.txt > file.test.txt
+cat file.test.txt
+exit
+-- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
+/tmp/cs343.tests.GMItkS               /tmp/cs343.tests.GMItkS
+                        > /tmp/cs343.tests.GMItkS
+                        >       0       0       0
+ 1  1 24                   1  1 24
+------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-18 basic test cases passed
+0 extra credit test cases passed
+
+CHECK FOR MEMORY LEAKS
+0 possible leaks
+0 leaks
+0 still reachable
+Davids-MacBook-Pro-5:Tiny-Shell davidryan93$
