@@ -458,3 +458,14 @@ void ReleaseCmdT(commandT **cmd){
     if((*cmd)->argv[i] != NULL) free((*cmd)->argv[i]);
   free(*cmd);
 }
+
+void IntFgProc() {
+  jobL* curr = jobs;
+  while (curr) {
+    if (!curr->isBG) {
+      kill(-curr->pid, SIGINT);
+      removeFromList(curr->jobNum);
+    }
+    curr = curr->next;
+  }
+}
