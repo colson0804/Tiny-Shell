@@ -70,7 +70,7 @@
 
 typedef struct job_l {
   pid_t pid;
-  int id;
+  int jobNum;
   int isBG;
   int status;
   char *cmdline;
@@ -250,18 +250,18 @@ jobL* addtolist(pid_t pid, commandT* cmd){
   int newid = 0;
 
   if (jobList == NULL){
-    newJobNode->id = 1;
+    newJobNode->jobNum = 1;
     jobs = newJobNode;
   }
   else{
-    newid = jobList->id;
+    newid = jobList->jobNum;
     while(jobList->next !=NULL){
-      if(newid < jobList->id)
-        newid = jobList->id;
+      if(newid < jobList->jobNum)
+        newid = jobList->jobNum;
       jobList = jobList->next;
     }
     jobList->next = newJobNode;
-    newJobNode->id = newid + 1;
+    newJobNode->jobNum = newid + 1;
   }
 
   if (cmd->bg){
@@ -331,7 +331,8 @@ void runInFg(int job){
   pid_t result;
   while(jobNode != NULL){
     result = waitpid(jobNode->pid, &status, WUNTRACED);
-    if((result) && (jobNode->pid == job)) {
+    if((result) && (jobNode->jobNum == job)) {
+      jobNode->isBG=0;
       while(waitpid(jobNode->pid, &status, WUNTRACED|WNOHANG) == 0){
           sleep(1);
       }
@@ -404,7 +405,7 @@ void CheckJobs(int jobCmd)
       pid_t res = waitpid(jobNode->pid, &statusCode, WUNTRACED|WNOHANG); 
       if (jobCmd == 0){
         if (res){
-          printf("[%d]   Done                   %s\n", jobNode->id, jobNode->cmdline);
+          printf("[%d]   Done                   %s\n", jobNode->jobNum, jobNode->cmdline);
           fflush(stdout);
           removeFromList(jobNode->pid);
           jobNode = next;
@@ -414,12 +415,12 @@ void CheckJobs(int jobCmd)
       else{
         if (WIFSTOPPED(statusCode)){
           jobNode->status=3;
-          printf("[%d]   Stopped                %s&\n", jobNode->id, jobNode->cmdline);
+          printf("[%d]   Stopped                %s&\n", jobNode->jobNum, jobNode->cmdline);
           fflush(stdout);
         }
         else if (res == 0){
           jobNode->status=1;
-          printf("[%d]   Running                %s&\n", jobNode->id, jobNode->cmdline);
+          printf("[%d]   Running                %s&\n", jobNode->jobNum, jobNode->cmdline);
           fflush(stdout);
         }
         else {
