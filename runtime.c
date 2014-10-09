@@ -365,7 +365,7 @@ void runJobCmd()
       fflush(stdout);
     }
     else if (res == 0){
-      printf("[%d]   Running                %s&\n", jobNode->jobNum, jobNode->cmdline);
+      printf("[%d]   Running                %s &\n", jobNode->jobNum, jobNode->cmdline);
       fflush(stdout);
     }
     jobNode = jobNode->next;
