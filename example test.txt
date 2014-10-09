@@ -1,7 +1,3 @@
-RUN BASIC TEST CASES
-test33: PASS
-test34: PASS
-test01: PASS
 test02: PASS
 test03: PASS
 test04: PASS
@@ -10,71 +6,10 @@ test06: PASS
 test07: PASS
 test08: PASS
 test09: PASS
-test10: FAILED
-Input:
-./myspin 4 &
-./myspin 5
-SLEEP 2
-INT
-jobs
-exit
--- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
-                                                                              | [1]   Done                   ./myspin 4
-[1]   Running                 ./myspin 4 &                                    <
-------------------------------------------------------------------------------------------------------------------------------------------------------------
-test11: FAILED
-Input:
-./myspin 4 &
-./myspin 5
-SLEEP 2
-TSTP
-SLEEP 1
-jobs
-fg 2
-SLEEP 4
-exit
--- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
-                                                                              | [1]   Done                   ./myspin 4
-[2]   Stopped                 ./myspin 5                                      <
-[1]   Running                 ./myspin 4 &                                    <
-[2]   Stopped                 ./myspin 5                                      <
-------------------------------------------------------------------------------------------------------------------------------------------------------------
-test12: FAILED
-Input:
-./myspin 4 &
-./myspin 5
-SLEEP 2
-TSTP
-SLEEP 1
-jobs
-bg 2
-jobs
-exit
--- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
-                                                                              | [1]   Done                   ./myspin 4
-[2]   Stopped                 ./myspin 5                                      <
-[1]   Running                 ./myspin 4 &                                    <
-[2]   Stopped                 ./myspin 5                                      <
-[1]   Running                 ./myspin 4 &                                    <
-[2]   Running                 ./myspin 5 &                                    <
-------------------------------------------------------------------------------------------------------------------------------------------------------------
-test13: FAILED
-Input:
-./myspin 5 &
-SLEEP 1
-fg 1
-SLEEP 1
-TSTP
-SLEEP 1
-jobs
-fg 1
-jobs
-exit
--- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
-                                                                              <
-[1]   Stopped                 ./myspin 5                                      <
-[1]   Stopped                 ./myspin 5                                      <
-------------------------------------------------------------------------------------------------------------------------------------------------------------
+test10: PASS
+test11: PASS
+test12: PASS
+test13: PASS
 test14: FAILED
 Input:
 bash -c "sleep 4; echo hello1;"
@@ -89,12 +24,12 @@ echo hello2
 sleep 4
 exit
 -- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
-                                                                              <
-[1]   Stopped                 bash -c "sleep 4; echo hello1;"                 <
-[1]   Stopped                 bash -c "sleep 4; echo hello1;"                 <
-[1]   Running                 bash -c "sleep 4; echo hello1;" &               <
-hello1                                                                          hello1
-hello2                                                                          hello2
+                        | [1]   Stopped                bash -c "sleep 4; echo hello1;"
+[1]   Stopped                 bash -c "sleep 4; echo hello1;"         | [1]   Stopped                bash -c "sleep 4; echo hello1;"
+[1]   Stopped                 bash -c "sleep 4; echo hello1;"           | [1]   Running                bash -c "sleep 4; echo hello1;"&
+[1]   Running                 bash -c "sleep 4; echo hello1;" &         <
+hello1                    hello1
+hello2                    hello2
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 test15: PASS
 test16: PASS
@@ -116,17 +51,17 @@ echo hello4
 sleep 3
 exit
 -- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
-                                                                              <
-[1]   Stopped                 bash -c "sleep 3; echo hello1;"                 <
-[1]   Stopped                 bash -c "sleep 3; echo hello1;"                 <
-[1]   Running                 bash -c "sleep 3; echo hello1;" &               <
-hello1                                                                          hello1
-hello2                                                                          hello2
-[1]   Running                 bash -c "sleep 3; echo hello3;" &               | [1]   Running                bash -c "sleep 3; echo hello3;" &
-hello3                                                                          hello3
-hello4                                                                          hello4
+                        | [1]   Stopped                bash -c "sleep 3; echo hello1;"
+[1]   Stopped                 bash -c "sleep 3; echo hello1;"         | [1]   Stopped                bash -c "sleep 3; echo hello1;"
+[1]   Stopped                 bash -c "sleep 3; echo hello1;"           | [1]   Running                bash -c "sleep 3; echo hello1;"&
+[1]   Running                 bash -c "sleep 3; echo hello1;" &         <
+hello1                    hello1
+hello2                    hello2
+[1]   Running                 bash -c "sleep 3; echo hello3;" &         | [1]   Running                bash -c "sleep 3; echo hello3;" &
+hello3                    hello3
+hello4                    hello4
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 test18: PASS
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-14 basic test cases passed
+18 basic test cases passed

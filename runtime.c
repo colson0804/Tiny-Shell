@@ -150,12 +150,13 @@ void StopFgProc() {
     if (!current->isBG) {
       current->status = STOPPED;
       kill(-current->pid, SIGTSTP);
-      return;
+      printf("[%d]   Stopped                %s\n", current->jobNum, current->cmdline);
+      fflush(stdout);
+      break;
     }
     current = current->next;
   }
 }
-
 
 /*Try to run an external command*/
 static void RunExternalCmd(commandT* cmd, bool fork)
@@ -221,7 +222,7 @@ void removeFromList(pid_t pid) {
   jobL *next = NULL;
   while(jobNode != NULL){
     next = jobNode->next;
-    if (jobNode->pid == pid){
+    if ((jobNode->pid == pid) && (jobNode->status != STOPPED)){
       if (prev){
         prev->next = next;
       }
@@ -296,11 +297,11 @@ static void Exec(commandT* cmd, bool forceFork)
       else{
         int statusCode;
         addtolist(pid, cmd);
+        sigprocmask(SIG_UNBLOCK, &sigmask, NULL); 
         while(waitpid(pid, &statusCode, WNOHANG|WUNTRACED) == 0){
           sleep(1);
         }
         removeFromList(pid);
-        sigprocmask(SIG_UNBLOCK, &sigmask, NULL); 
       }
     }
  } 
@@ -324,11 +325,11 @@ static bool IsBuiltIn(char* cmd)
 void runInFg(int job){
   jobL *jobNode = jobs;
   int status;
-  pid_t result;
   while(jobNode != NULL){
-    result = waitpid(jobNode->pid, &status, WUNTRACED);
-    if((result) && (jobNode->jobNum == job)) {
+    if(jobNode->jobNum == job) {
       jobNode->isBG=0;
+      jobNode->status = RUNNING;
+      kill(-jobNode->pid, SIGCONT);
       while(waitpid(jobNode->pid, &status, WUNTRACED|WNOHANG) == 0){
           sleep(1);
       }
@@ -337,16 +338,17 @@ void runInFg(int job){
     }
     jobNode = jobNode -> next;
   }
+  printf("end of fg\n");
+  fflush(stdout);
 }
 
 void runbgJob(int job){
   jobL *jobNode = jobs;
-  int status;
-  pid_t result;
   while(jobNode != NULL){
-    result = waitpid(jobNode->pid, &status, WUNTRACED);
-    if((result) && (jobNode->pid == job)) {
+    if(jobNode->jobNum == job) {
+      jobNode->status=RUNNING;
       kill(jobNode->pid, SIGCONT);
+      return;
     }
     jobNode = jobNode -> next;
   }
@@ -359,7 +361,7 @@ void runJobCmd()
     int statusCode;
     pid_t res = waitpid(jobNode->pid, &statusCode, WUNTRACED|WNOHANG); 
     if (jobNode->status == STOPPED){
-      printf("[%d]   Stopped                %s&\n", jobNode->jobNum, jobNode->cmdline);
+      printf("[%d]   Stopped                %s\n", jobNode->jobNum, jobNode->cmdline);
       fflush(stdout);
     }
     else if (res == 0){
@@ -375,7 +377,8 @@ static void RunBuiltInCmd(commandT* cmd)
   if(strcmp(cmd->argv[0], "cd") == 0) {
     char* input = cmd->argv[1];
     if (input == NULL){
-       chdir(getenv("HOME"));
+       if(chdir(getenv("HOME")))
+        printf("Error changing director\n");
        return;
     }
     char* cwd = getCurrentWorkingDir();
@@ -383,7 +386,8 @@ static void RunBuiltInCmd(commandT* cmd)
     newCwd = strcat(newCwd, input);    
     struct stat s;
     if(stat(input, &s) == 0){
-      chdir(newCwd);
+      if(chdir(newCwd))
+        printf("Error changing director\n");
     }
   }
   if(strcmp(cmd->argv[0], "bg") == 0) {
