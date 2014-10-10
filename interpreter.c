@@ -197,6 +197,7 @@ void Interpret(char* cmdLine)
     }
   }
   parser_single(&(cmdLine[i-j]), j, &(command[task]),bg);
+
   RunCmd(command, task+1);
   free(command);
 }

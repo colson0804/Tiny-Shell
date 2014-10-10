@@ -106,6 +106,7 @@ static void sig(int signo)
   else if (signo == SIGINT){
     IntFgProc();
   }
+  // Not needed; child handled within RunCmd
   // else if (signo == SIGCHLD){
   //   printf("Child process finished\n");
   // }

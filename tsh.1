@@ -1,0 +1,21 @@
+.\" Process this file with
+.\" groff -man -Tascii foo.1
+.\"
+.TH TSH 1 "OCTOBER 2014" Linux "User Manuals"
+.SH NAME
+tsh \- A tiny shell that can be run from the terminal
+.SH DESCRIPTION
+.B tsh
+is a smaller version of a Unix shell that can run many basic commands. In particular, it contains the builtin commands cd, bg, fg, and jobs. With 'fg' and 'bg', a user is allowed to send jobs to either the foreground or background. They can use 'jobs' to view the current list of jobs with their status. It can also run many external commands that exist within the user's directory.
+
+Most major design decisions regarded how we handled signals and how we allowed users to place jobs in the foreground or background. The main exec function basically forks a process and then waits for the child process to execute before the parent process can proceed. Foreground and background processes work the same way, except a foreground process will wait for a process to complete before prompting the user for a new command (using waitpid). Jobs are stored in a linked list of jobL objects. They are given a sequential number, as well as a pid, foreground/background information, and their current status (Running, Done, or Stopped). Signals handled include SIGTSTP, which pauses a process, SIGINT, which stops and removes a process, and SIGCONT, which continues a process where the user specifies.
+
+Please see comments for more information on implementation.
+.SH BUGS
+No known bugs or memory leaks.
+.SH AUTHORS
+Craig Olson / David Ryan
+
+EECS 343: Introduction to Operating Systems
+
+Professor Fabian Bustamante

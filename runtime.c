@@ -77,6 +77,7 @@ typedef struct job_l {
   struct job_l* next;
 } jobL;
 
+// Linked list for alias command (unimplemented)
 typedef struct alias_l {
   char *alias;
   char* realCmd;
@@ -151,6 +152,9 @@ void RunCmdRedirIn(commandT* cmd, char* file)
 }
 
 void StopFgProc() {
+  // Called from SIGTSTP signal handler
+  // Just run through list of jobs and stop the one that's
+  //  in the foreground
   jobL* current = jobs;
   while (current != NULL) {
     if (!current->isBG) {
@@ -213,7 +217,7 @@ static bool ResolveExternalCmd(commandT* cmd)
     strcat(buf,cmd->argv[0]);
     if(stat(buf, &fs) >= 0){
       if(S_ISDIR(fs.st_mode) == 0)
-        if(access(buf,X_OK) == 0){/*Whether it's an executable or the user has required permisson to run it*/
+        if(access(buf,X_OK) == 0){ /*Whether it's an executable or the user has required permisson to run it*/
           cmd->name = strdup(buf);
           return TRUE;
         }
@@ -223,6 +227,7 @@ static bool ResolveExternalCmd(commandT* cmd)
 }
 
 void removeFromList(pid_t pid) {
+  // Remove and free job with given pid
   jobL *jobNode = jobs;
   jobL *prev = NULL;
   jobL *next = NULL;
@@ -246,6 +251,7 @@ void removeFromList(pid_t pid) {
 }
 
 void addtolist(pid_t pid, commandT* cmd){
+  // Add to job list
   jobL *jobList = jobs;
   jobL *newJobNode = (jobL *)malloc(sizeof(jobL));
 
@@ -290,13 +296,14 @@ static void Exec(commandT* cmd, bool forceFork)
     perror("fork failed");
   } else { 
     if (pid == 0){ /* Return 0 to the child */
-      // Need to pass path name and arguments to execvp
-      setpgid(0,0);
+      // Need to pass path name and arguments to execv
+      setpgid(0, 0);
       sigprocmask(SIG_UNBLOCK, &sigmask, NULL);
       execv(cmd->name, cmd->argv);
       
     } else { /* And the child PID to the parent */
       if (cmd->bg){
+        // Simply add to list, but don't wait to finish before prompting user
         addtolist(pid, cmd);
         sigprocmask(SIG_UNBLOCK, &sigmask, NULL);
       }
@@ -304,6 +311,7 @@ static void Exec(commandT* cmd, bool forceFork)
         int statusCode;
         addtolist(pid, cmd);
         sigprocmask(SIG_UNBLOCK, &sigmask, NULL); 
+        // If in foreground, wait until finished to remove from job list
         while(waitpid(pid, &statusCode, WNOHANG|WUNTRACED) == 0){
           sleep(1);
         }
@@ -331,12 +339,14 @@ static bool IsBuiltIn(char* cmd)
 }
 
 void runInFg(int job){
+  // Run when user types fg
   jobL *jobNode = jobs;
   int status;
   while(jobNode != NULL){
     if(jobNode->jobNum == job) {
       jobNode->isBG=0;
       jobNode->status = RUNNING;
+      // Continue job, then wait until finished
       kill(-jobNode->pid, SIGCONT);
       while(waitpid(jobNode->pid, &status, WUNTRACED|WNOHANG) == 0){
           sleep(1);
@@ -349,6 +359,8 @@ void runInFg(int job){
 }
 
 void runbgJob(int job){
+  // Run when user types bg
+  // Same as runInFg, but don't wait for process to complete
   jobL *jobNode = jobs;
   while(jobNode != NULL){
     if(jobNode->jobNum == job) {
@@ -362,15 +374,17 @@ void runbgJob(int job){
 
 void runJobCmd()
 {
+  // Run when user types 'jobs'
   jobL *jobNode = jobs;
   while(jobNode != NULL) {   
     int statusCode;
+    // res returns 0 if job is still running
     pid_t res = waitpid(jobNode->pid, &statusCode, WUNTRACED|WNOHANG); 
-    if (jobNode->status == STOPPED){
+    if (jobNode->status == STOPPED) {
       printf("[%d]   Stopped                %s\n", jobNode->jobNum, jobNode->cmdline);
       fflush(stdout);
     }
-    else if (res == 0){
+    else if (res == 0) { 
       printf("[%d]   Running                %s &\n", jobNode->jobNum, jobNode->cmdline);
       fflush(stdout);
     }
@@ -383,6 +397,7 @@ static void removeAlias(char *cmd){
 }
 
 static void runAlias(commandT* newCmd){
+  printf("Number of commands: %d\n", newCmd->argc);
   aliasL *aliasNode = aliasList;
   if (newCmd->argc == 0){
     while (aliasNode != NULL){
@@ -392,6 +407,14 @@ static void runAlias(commandT* newCmd){
   else{
     //foo='ls -lh' is ending after the space...
     //we need to add stuff to the interpreter to look for "alias" and "="
+    while (aliasNode != NULL) {
+      
+      aliasNode = aliasNode->next;
+    }
+    aliasNode = (aliasL *)malloc(sizeof(aliasL));
+    aliasNode->realCmd = strdup(newCmd->argv[1]);
+    aliasNode->alias = strdup(newCmd->argv[1]);
+    aliasNode->next = NULL;
   }
 }
 
@@ -430,12 +453,15 @@ static void RunBuiltInCmd(commandT* cmd)
   }   
 }
 
-void CheckJobs(){
+void CheckJobs() {
+  // Called in tsh.c
+  // Will tell if job is completed and remove from job list
   jobL *jobNode = jobs;
   jobL *next = NULL; 
   while(jobNode != NULL){  
     next = jobNode->next;
     int statusCode;
+    // Res pid returns 1 if job is finished
     pid_t res = waitpid(jobNode->pid, &statusCode, WNOHANG); 
     if (res){
       printf("[%d]   Done                   %s\n", jobNode->jobNum, jobNode->cmdline);
@@ -478,9 +504,11 @@ void ReleaseCmdT(commandT **cmd){
 }
 
 void IntFgProc() {
+  // Called from SIGINT handler
   jobL* curr = jobs;
   while (curr) {
     if (!curr->isBG) {
+      // Interrupt and completely remove job
       kill(-curr->pid, SIGINT);
       removeFromList(curr->jobNum);
     }
