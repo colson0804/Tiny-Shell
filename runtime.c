@@ -414,6 +414,7 @@ static void runAlias(commandT* newCmd){
     aliasNode = (aliasL *)malloc(sizeof(aliasL));
     aliasNode->realCmd = strdup(newCmd->argv[1]);
     aliasNode->alias = strdup(newCmd->argv[1]);
+    printf("Command is: %s\n", aliasNode->realCmd);
     aliasNode->next = NULL;
   }
 }

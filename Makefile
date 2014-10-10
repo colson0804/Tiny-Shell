@@ -18,7 +18,7 @@
 ###############################################################################
 
 # handin info
-TEAM = `whoami`
+TEAM = `cwo258+dmr186`
 VERSION = `date +%Y%m%d%H%M%S`
 PROJ = tsh
 

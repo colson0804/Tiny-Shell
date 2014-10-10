@@ -10,6 +10,8 @@ is a smaller version of a Unix shell that can run many basic commands. In partic
 
 Most major design decisions regarded how we handled signals and how we allowed users to place jobs in the foreground or background. The main exec function basically forks a process and then waits for the child process to execute before the parent process can proceed. Foreground and background processes work the same way, except a foreground process will wait for a process to complete before prompting the user for a new command (using waitpid). Jobs are stored in a linked list of jobL objects. They are given a sequential number, as well as a pid, foreground/background information, and their current status (Running, Done, or Stopped). Signals handled include SIGTSTP, which pauses a process, SIGINT, which stops and removes a process, and SIGCONT, which continues a process where the user specifies.
 
+We did attempt to complete the alias command. Basically, our implementation involved creating a linked list of all the different aliases that the user created. Each node in the list would contain both the alias and the command that the alias would refer to. Then, when the user types in the alias and the alias does not already appear as a command, the program will search through the list for the command. However, this was not fully implented because we ran into problems with parsing the command line.
+
 Please see comments for more information on implementation.
 .SH BUGS
 No known bugs or memory leaks.
